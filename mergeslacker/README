@@ -1,0 +1,5 @@
+Very small but robust configuration merging tool
+for Slackware Linux.
+
+Run this after you have upgraded packages that
+have installed new configuration files (.new suffix).
