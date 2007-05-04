@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Mergeslacker version 1.0.
+
 # Copyright (c) 2006 Antti Harri <iku@openbsd.fi>
 #
 # Permission to use, copy, modify, and distribute this software for any
