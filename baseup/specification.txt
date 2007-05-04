@@ -1,0 +1,33 @@
+
+--- Base up ---
+
+This is a quick draft about the inner workings
+of baseup the OpenBSD base system upgrader.
+
+The current way of upgrading OpenBSD is *VERY*
+simple itself but at least I feel that there's
+a need for a little shell script like this.
+
+I *STRONLY* encourage users to first learn how 
+the system is upgraded the official way and then
+consider using this.
+
+--- How ---
+
+1) Ask the user for the source of the tarballs.
+2) Fetch appropriate kernel and replace old one.
+3) Fetch installed base packages.
+4) Set up environment from which baseup can
+   continue after kernel reboot.
+5) Extract base packages and store a list of
+   packages extracted for future execution
+   of baseup. Also store the source of the 
+   tarballs.
+
+--- Requirements ---
+
+- Nothing else than base system of OpenBSD.
+- Enough storage space.
+- Sane user.
+
+
