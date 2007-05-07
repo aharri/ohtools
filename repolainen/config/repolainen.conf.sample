@@ -1,0 +1,31 @@
+#!/bin/sh
+
+RSYNC="/usr/local/bin/rsync"
+RSYNC_FLAGS="-vzrlptD --numeric-ids --timeout 7200 --delete --delete-excluded -n"
+REPOSITORIES="crux openbsd"
+
+SRC_crux="rsync://ftp.fukt.bsnet.se/crux/"
+DST_crux="/mirrors/crux/"
+
+VERS="4.0 4.1"
+ARCHS="i386 arm m68k mips64 powerpc sparc64"
+SRC_openbsd="rsync://131.188.40.91/OpenBSD/"
+DST_openbsd="/mirrors/openbsd/"
+
+# compile filter rules
+FILTER_openbsd=
+for VER in $VERS; do
+	FILTER_openbsd="$FILTER_openbsd
++ /$VER/
++ /$VER/packages/"
+	for ARCH in $ARCHS; do
+		FILTER_openbsd="$FILTER_openbsd
++ /$VER/$ARCH/
++ /$VER/$ARCH/*
++ /$VER/packages/$ARCH/
++ /$VER/packages/$ARCH/*"
+	done
+done
+FILTER_openbsd="$FILTER_openbsd
+- *"
+
