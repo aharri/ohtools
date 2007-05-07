@@ -17,6 +17,7 @@ FILTER_openbsd=
 for VER in $VERS; do
 	FILTER_openbsd="$FILTER_openbsd
 + /$VER/
++ /$VER/*
 + /$VER/packages/"
 	for ARCH in $ARCHS; do
 		FILTER_openbsd="$FILTER_openbsd
