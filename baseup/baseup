@@ -4,125 +4,87 @@ VERBOSE=1
 BASE=$(cd -- "$(dirname -- "$0")"; pwd)
 CONFIG="${BASE}/.config"
 
-function query_index
-{
-	_VAL=$(cd "${BASE}/tmp/" && grep "^$1..\.tgz" index.txt)
-}
-function check_md5
-{
-	(cd "${BASE}/tmp/" && grep "($1)" MD5 | md5 -c) 1>/dev/null 2>&1
-}
-function touch_file
-{
-	if [ ! -e "$1" ]; then
-		touch "$1"
-		if [ "$?" -ne 0 ]; then
-			echo "Failed to create configuration file $1"
-			exit 1
-		fi
-	fi
-}
-function get_config
-{
-	# If configuration does not exist, create it
-	touch_file "$CONFIG"
+# pick up functions
+. "$BASE/functions.sh"
 
-	_VAL=$(egrep "^$1=" "$CONFIG")
-	ret=$?
-	if [ "$ret" -ne "0" ]; then
-		return $ret
-	fi
-	_VAL=$(echo "$_VAL"	| cut -f 2 -d '=' | tail -n 1)
-	
-}
-function set_config
-{
-	# If configuration does not exist, create it
-	touch_file "$CONFIG"
-	get_config $1
-	if [ "$?" -ne "0" ]; then
-		echo "$1=$2" >> "$CONFIG"
-		return 0
-	fi
-	TMPFILE=`mktemp -t baseup.XXXXXXXXXX` || return 1
-	sed "s,^$1=.*$,$1=$2," "$CONFIG" > "$TMPFILE"
-	cp -f "$TMPFILE" "$CONFIG"
-	rm -f "$TMPFILE"
-	return 0
-}
-
-function fetch_files
-{
-	for file in $FILES; do
-		#echo -n "$file\t\t"
-		if [ "$1" = "verify" ]; then
-			check_md5 "$file"
-			if [ "$?" -eq 0 ]; then
-				printf "%-30s %s\n" $file "CACHED"
-				#echo "CACHED"
-				continue;
-			fi
-		fi
-		# XXX This might be nicer with user prompt
-		rm -f "${BASE}/tmp/${file}"
-		cmd=$(ftp -o "${BASE}/tmp/${file}" "${source}/${file}" 1>/dev/null 2>&1)
-		code=$?
-		if [ "$code" -eq 0 ]; then
-			printf "%-30s %s\n" $file "GOOD"
-			#echo "GOOD"
-		else 
-			printf "%-30s %s\n" $file "FAILED with code $code"
-			#echo "FAILED with code $code"
-		fi
-	done
-}
-
-get_config source
+# check for first run
+get_config state
 if [ "$?" -ne "0" ]; then
-	echo "Let's begin. What address shall I use as package source?"
-	echo "Examples: "
-	echo "ftp://ftp.se.openbsd.org/pub/OpenBSD/snapshots/i386"
-	echo "ftp://ftp.openbsd.fi/pub/OpenBSD/4.0/i386"
-	read source
-	set_config source "$source"
-	if [ "$?" -ne "0" ]; then
-		echo "Failed to set configuration."
-		exit 1
-	fi
-else
-	source=$_VAL
+	set_config state install_kernel
 fi
 
-echo "Fetch source $source."
-echo "Fetching MD5 sums and index."
-FILES="MD5 index.txt"
-fetch_files
+get_config state
+case "$_VAL" in
+	"install_kernel" ) # in the middle of fetching files
 
-echo "Fetching new kernels."
-FILES="bsd.rd bsd bsd.mp"
-fetch_files "verify"
-
-echo "Fetching base packages."
-PKGS="base etc comp game man misc xbase xetc xfont xserv xshare"
-
-for pkg in $PKGS; do
-	get_config $pkg
-	if [ "$?" -ne "0" ]; then
-		echo -n "Install $pkg ? (y/N) "
-		read ans
-		set_config $pkg "$ans"
+		# SOURCE
+		get_config source
 		if [ "$?" -ne "0" ]; then
-			echo "Failed to set configuration."
+			init_source
+		else
+			source=$_VAL
+		fi
+
+		# FILE FETCHING
+		# always needed files
+		echo "Fetch source $source."
+		echo "Fetching MD5 sums and index."
+		fetch_files MD5 index.txt
+
+		echo "Fetching new kernels."
+		fetch_files --verify bsd.rd bsd bsd.mp
+
+		# fetch only selected files
+		echo "Fetching base packages."
+		PKGS="base etc comp game man misc xbase xetc xfont xserv xshare"
+
+		for pkg in $PKGS; do
+			get_config $pkg
+			if [ "$?" -ne "0" ]; then
+				echo -n "Install $pkg ? (y/N) "
+				read ans
+				set_config $pkg "$ans"
+				if [ "$?" -ne "0" ]; then
+					echo "Failed to set configuration."
+					exit 1
+				fi
+			else
+				ans=$_VAL
+			fi
+
+			# Fetch it
+			if [ "$ans" = "y" ]; then
+				query_index $pkg
+				fetch_files --verify $_VAL
+			fi
+		done
+
+		# now install kernels
+		echo "About to install kernels and then reboot, are you sure? (y/N) "
+		read ans
+		if [ "$ans" != "y" ]; then
+			echo "ABORTED!"
 			exit 1
 		fi
-	else
-		ans=$_VAL
-	fi
 
-	# Fetch it
-	if [ "$ans" = "y" ]; then
-		query_index $pkg
-		FILES=$_VAL
-		fetch_files
-	fi
-done
+		cp -f /bsd /bsd.orig
+		cp -f $BASE/tmp/bsd* /
+
+		echo "Kernel(s) installed"
+
+		echo "New config state written, reboot and re-run this script after reboot"
+		set_config state install_base
+	;;
+	"install_base" )
+		# install the packages
+
+		for pkg in $BASE/tmp/*.tgz; do
+			echo "Installing $pkg"
+			(cd / && tar zxfp "$pkg") || break
+		done
+
+		echo "Base installed"
+
+		set_config state install_kernel
+	;;
+esac
