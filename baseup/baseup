@@ -1,5 +1,12 @@
 #!/bin/sh
 
+# Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
+#
+# All rights reserved.
+#
+
+# Version 1.0
+
 VERBOSE=1
 BASE=$(cd -- "$(dirname -- "$0")"; pwd)
 CONFIG="${BASE}/.config"
@@ -55,15 +62,22 @@ case "$_VAL" in
 			# Fetch it
 			if [ "$ans" = "y" ]; then
 				query_index $pkg
-				fetch_files --verify $_VAL
+				# Skip verify for Xenocara package sets as there
+				# is no MD5sums available :-/
+				echo "$_VAL" | egrep -q "x..\.tgz$"
+				if [ "$?" -eq 0 ]; then
+					fetch_files --verify $_VAL
+				else
+					fetch_files $_VAL
+				fi
 			fi
 		done
 
 		# now install kernels
 		echo "About to install kernels, are you sure? (y/N) "
 		read ans
-		if [ "$ans" != "y" ]; then
-			echo "ABORTED!"
+		if [ "$ans" != "y" ] || [ $(id -u "$USER") -ne 0 ]; then
+			echo "User requested abort or user not root!"
 			exit 1
 		fi
 
@@ -79,8 +93,8 @@ case "$_VAL" in
 		# install the base packages
 		echo "About to install base packages, are you sure? (y/N) "
 		read ans
-		if [ "$ans" != "y" ]; then
-			echo "ABORTED!"
+		if [ "$ans" != "y" ] || [ $(id -u "$USER") -ne 0 ]; then
+			echo "User requested abort or user not root!"
 			exit 1
 		fi
 

@@ -1,12 +1,17 @@
 #!/bin/sh
 
+# Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
+#
+# All rights reserved.
+#
+
 function query_index
 {
 	_VAL=$(cd "${BASE}/tmp/" && grep "^$1..\.tgz" index.txt)
 }
 function check_md5
 {
-	(cd "${BASE}/tmp/" && grep "($1)" MD5 | md5 -c) 1>/dev/null 2>&1
+	(cd "${BASE}/tmp/" && fgrep "($1)" MD5 | md5 -c) 1>/dev/null 2>&1
 }
 function touch_file
 {
