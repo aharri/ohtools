@@ -66,9 +66,9 @@ case "$_VAL" in
 				# is no MD5sums available :-/
 				echo "$_VAL" | egrep -q "x..\.tgz$"
 				if [ "$?" -eq 0 ]; then
-					fetch_files --verify $_VAL
-				else
 					fetch_files $_VAL
+				else
+					fetch_files --verify $_VAL
 				fi
 			fi
 		done
