@@ -97,8 +97,9 @@ case "$_VAL" in
 		fi
 
 		for pkg in $BASE/tmp/*.tgz; do
-			if [ $(echo "$pkg" | egrep -q "etc..\.tgz$") -eq 0 ]; then
-				echo "Skipping etc, merge by hand!"
+			echo "$pkg" | egrep -q "/etc..\.tgz$"
+			if [ "$?" -eq 0 ]; then
+				echo "Skipping ${pkg}: merge by hand!"
 				continue
 			fi
 			echo "Installing $pkg"
