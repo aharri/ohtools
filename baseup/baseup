@@ -17,11 +17,9 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 . "$BASE/functions.sh"
 
 # check for first run
-get_config state
-if [ "$?" -ne "0" ]; then
-	set_config state install_kernel
-fi
+get_config state || set_config state install_kernel
 
+# main
 get_config state
 case "$_VAL" in
 	"install_kernel" ) # in the middle of fetching files
@@ -113,3 +111,5 @@ case "$_VAL" in
 		set_config state install_kernel
 	;;
 esac
+
+# $ specification.txt 2007-05-30 13:59 GMT+2 iku $

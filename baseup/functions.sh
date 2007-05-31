@@ -132,3 +132,5 @@ function init_source
 		exit 1
 	fi
 }
+
+# $ specification.txt 2007-05-30 13:59 GMT+2 iku $

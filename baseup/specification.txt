@@ -6,28 +6,42 @@ of baseup the OpenBSD base system upgrader.
 
 The current way of upgrading OpenBSD is *VERY*
 simple itself but at least I feel that there's
-a need for a little shell script like this.
+a need for a little shell script like this:
+- easy integrity checking for files
+- easier to manage multiple computers running OBSD
 
-I *STRONLY* encourage users to first learn how 
+I *STRONLY* encourage users to first learn how
 the system is upgraded the official way and then
-consider using this.
+consider using this. It's also worth mentioning
+that *NEVER* do this as cron job, it might result
+in an unbootable system if there are some runtime
+errors. Baseup has pretty good error checking
+but there's always a chance for bug.
 
 --- How ---
 
+-- Initialize --
+
 1) Ask the user for the source of the tarballs.
-2) Fetch appropriate kernel and replace old one.
-3) Fetch installed base packages.
-4) Set up environment from which baseup can
-   continue after kernel reboot.
-5) Extract base packages and store a list of
-   packages extracted for future execution
-   of baseup. Also store the source of the 
-   tarballs.
+
+-- Install, part 1 --
+
+1) Fetch directory indexes and MD5
+2) Fetch kernel and base
+3) Install kernel
+
+(User reboots and re-runs the script)
+
+-- Install, part 2 --
+
+1) Extra base packages
 
 --- Requirements ---
 
-- Nothing else than base system of OpenBSD.
-- Enough storage space.
+- Only net/curl from packages and nothing else
+  than base system of OpenBSD.
+- Enough storage space (~200M of temporary space)
 - Sane user.
 
 
+$ specification.txt 2007-05-30 13:59 GMT+2 iku $
