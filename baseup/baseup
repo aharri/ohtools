@@ -60,7 +60,7 @@ case "$_VAL" in
 		done
 
 		# now install kernels
-		echo "About to install kernels and then reboot, are you sure? (y/N) "
+		echo "About to install kernels, are you sure? (y/N) "
 		read ans
 		if [ "$ans" != "y" ]; then
 			echo "ABORTED!"
