@@ -85,11 +85,17 @@ case "$_VAL" in
 		fi
 
 		for pkg in $BASE/tmp/*.tgz; do
+			if [ $(echo "$pkg" | egrep -q "etc..\.tgz$") -eq 0 ]; then
+				echo "Skipping etc, merge by hand!"
+				continue
+			fi
 			echo "Installing $pkg"
 			(cd / && tar zxfp "$pkg") || break
 		done
 
-		echo "Base installed"
+		echo "Base installed, you might want to reboot now."
+		echo "Also remember to merge /etc by hand!"
+		echo "Remove $BASE/tmp/*.tgz if you want."
 
 		set_config state install_kernel
 	;;
