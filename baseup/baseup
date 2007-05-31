@@ -8,8 +8,10 @@
 # Version 1.0
 
 VERBOSE=1
+CURL_OPTS="-s -4"
 BASE=$(cd -- "$(dirname -- "$0")"; pwd)
 CONFIG="${BASE}/.config"
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 
 # pick up functions
 . "$BASE/functions.sh"
@@ -34,12 +36,15 @@ case "$_VAL" in
 
 		# FILE FETCHING
 		# always needed files
+		echo "Getting file sizes (for x*.tgz)"
+		fetch_listing "$BASE/tmp/dirlisting.txt"
+
 		echo "Fetch source $source."
 		echo "Fetching MD5 sums and index."
-		fetch_files MD5 index.txt
+		fetch_files -f MD5 index.txt
 
 		echo "Fetching new kernels."
-		fetch_files --verify bsd.rd bsd bsd.mp
+		fetch_files bsd.rd bsd bsd.mp
 
 		# fetch only selected files
 		echo "Fetching base packages."
@@ -62,19 +67,12 @@ case "$_VAL" in
 			# Fetch it
 			if [ "$ans" = "y" ]; then
 				query_index $pkg
-				# Skip verify for Xenocara package sets as there
-				# is no MD5sums available :-/
-				echo "$_VAL" | egrep -q "x..\.tgz$"
-				if [ "$?" -eq 0 ]; then
-					fetch_files $_VAL
-				else
-					fetch_files --verify $_VAL
-				fi
+				fetch_files $_VAL
 			fi
 		done
 
 		# now install kernels
-		echo "About to install kernels, are you sure? (y/N) "
+		echo -n "About to install kernels, are you sure? (y/N) "
 		read ans
 		if [ "$ans" != "y" ] || [ $(id -u "$USER") -ne 0 ]; then
 			echo "User requested abort or user not root!"
@@ -91,7 +89,7 @@ case "$_VAL" in
 	;;
 	"install_base" )
 		# install the base packages
-		echo "About to install base packages, are you sure? (y/N) "
+		echo -n "About to install base packages, are you sure? (y/N) "
 		read ans
 		if [ "$ans" != "y" ] || [ $(id -u "$USER") -ne 0 ]; then
 			echo "User requested abort or user not root!"

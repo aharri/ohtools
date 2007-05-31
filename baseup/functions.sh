@@ -13,6 +13,17 @@ function check_md5
 {
 	(cd "${BASE}/tmp/" && fgrep "($1)" MD5 | md5 -c) 1>/dev/null 2>&1
 }
+
+function check_filesize
+{
+	local size1=$(egrep "${1}$" "$BASE/tmp/dirlisting.txt" | awk '{ print $5 }')
+	local size2=$(ls -l "$BASE/tmp/$1" 2>/dev/null | awk '{ print $5 }')
+
+	if [ "$size1" -eq "$size2" ]; then
+		return 0
+	fi
+	return 1
+}
 function touch_file
 {
 	if [ ! -e "$1" ]; then
@@ -55,16 +66,21 @@ function set_config
 function fetch_files
 {
 	for file in $@; do
+
 		# skip parameter
-		if [ "$file" = '--verify' ]; then
+		if [ "$file" = '-f' ]; then
 			continue
 		fi
 
-		if [ "$1" = "--verify" ]; then
-			check_md5 "$file"
+		check_md5 "$file"
+		if [ "$?" -eq 0 ] && [ "$1" != '-f' ]; then
+			printf "%-30s %s\n" "$file" "CACHED (md5 checked)"
+			continue
+		elif [ -e "$BASE/tmp/$file" ] && [ "$1" != '-f' ]; then
+			check_filesize "$file"
 			if [ "$?" -eq 0 ]; then
-				printf "%-30s %s\n" $file "CACHED"
-				continue;
+				printf "%-30s %s\n" "$file" "CACHED (size checked)"
+				continue
 			fi
 		fi
 		# XXX This might be nicer with user prompt
@@ -79,6 +95,30 @@ function fetch_files
 	done
 }
 
+function fetch_listing
+{
+	if [ -z "$1" ]; then
+		echo "fetch listing: not enough parameters"
+		exit
+	fi
+	which curl 1>/dev/null 2>/dev/null
+	if [ "$?" -ne 0 ]; then
+		echo "Curl not found, install it"
+		exit 1
+	fi
+
+	get_config source
+	curl $CURL_OPTS "$source/" -o "$1"
+	code=$?
+	if [ "$code" -eq 0 ]; then
+		printf "%-30s %s\n" "dirlisting" "GOOD"
+	else
+		printf "%-30s %s\n" "dirlisting" "FAILED with code $code"
+		# we need this file
+		exit 1
+	fi
+	return "$code"
+}
 function init_source
 {
 	echo "Let's begin. What address shall I use as package source?"
