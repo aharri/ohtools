@@ -76,7 +76,13 @@ case "$_VAL" in
 		set_config state install_base
 	;;
 	"install_base" )
-		# install the packages
+		# install the base packages
+		echo "About to install base packages, are you sure? (y/N) "
+		read ans
+		if [ "$ans" != "y" ]; then
+			echo "ABORTED!"
+			exit 1
+		fi
 
 		for pkg in $BASE/tmp/*.tgz; do
 			echo "Installing $pkg"
