@@ -19,7 +19,7 @@ function check_filesize
 	local size1=$(egrep "${1}$" "$BASE/tmp/dirlisting.txt" | awk '{ print $5 }')
 	local size2=$(ls -l "$BASE/tmp/$1" 2>/dev/null | awk '{ print $5 }')
 
-	if [ "$size1" -eq "$size2" ]; then
+	if [ "$size1" = "$size2" ]; then
 		return 0
 	fi
 	return 1
