@@ -85,12 +85,22 @@ function fetch_files
 		fi
 		# XXX This might be nicer with user prompt
 		rm -f "${BASE}/tmp/${file}"
-		cmd=$(ftp -o "${BASE}/tmp/${file}" "${source}/${file}" 1>/dev/null 2>&1)
-		code=$?
+		case $(echo "$source" | cut -f 1 -d ':') in 
+			file )
+				local src=$(echo "$source" | sed -e 's,^file://,,')
+				cmd=$(cp "${src}/${file}" "${BASE}/tmp/${file}" 1>/dev/null 2>&1)
+				code=$?
+			;;
+			ftp|http )
+				cmd=$(ftp -o "${BASE}/tmp/${file}" "${source}/${file}" 1>/dev/null 2>&1)
+				code=$?
+			;;
+		esac
 		if [ "$code" -eq 0 ]; then
 			printf "%-30s %s\n" $file "GOOD"
 		else 
 			printf "%-30s %s\n" $file "FAILED with code $code"
+			exit 1
 		fi
 	done
 }
@@ -101,15 +111,26 @@ function fetch_listing
 		echo "fetch listing: not enough parameters"
 		exit
 	fi
-	which curl 1>/dev/null 2>/dev/null
-	if [ "$?" -ne 0 ]; then
-		echo "Curl not found, install it"
-		exit 1
-	fi
+	case $(echo "$source" | cut -f 1 -d ':') in 
+		file )
+			local src=$(echo "$source" | sed -e 's,^file://,,')
+			/bin/ls -l "$src" > "$1" 2>/dev/null
+			code=$?	
+		;;
+		# http isn't tested
+		ftp|http )
+			which curl 1>/dev/null 2>/dev/null
+			if [ "$?" -ne 0 ]; then
+				echo "Curl not found, install it"
+				exit 1
+			fi
 
-	get_config source
-	curl $CURL_OPTS "$source/" -o "$1"
-	code=$?
+			#get_config source
+			curl $CURL_OPTS "$source/" -o "$1"
+			# FIXME: curl doesn't return !0 when failure
+			code=$?
+		;;
+	esac
 	if [ "$code" -eq 0 ]; then
 		printf "%-30s %s\n" "dirlisting" "GOOD"
 	else
@@ -117,7 +138,7 @@ function fetch_listing
 		# we need this file
 		exit 1
 	fi
-	return "$code"
+	return 0
 }
 function init_source
 {
