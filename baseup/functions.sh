@@ -95,6 +95,10 @@ function fetch_files
 				cmd=$(ftp -o "${BASE}/tmp/${file}" "${source}/${file}" 1>/dev/null 2>&1)
 				code=$?
 			;;
+			* )
+				echo "Unsupported URL scheme $src"
+				exit 1
+			;;
 		esac
 		if [ "$code" -eq 0 ]; then
 			printf "%-30s %s\n" $file "GOOD"
@@ -129,6 +133,10 @@ function fetch_listing
 			curl $CURL_OPTS "$source/" -o "$1"
 			# FIXME: curl doesn't return !0 when failure
 			code=$?
+		;;
+		* )
+			echo "Unsupported URL scheme $src"
+			exit 1
 		;;
 	esac
 	if [ "$code" -eq 0 ]; then
