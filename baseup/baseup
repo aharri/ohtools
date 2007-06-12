@@ -104,6 +104,10 @@ case "$_VAL" in
 			(cd / && tar zxfp "$pkg") || break
 		done
 
+		echo "Creating devices."
+		# FIXME error checking
+		(cd /dev && ./MAKEDEV all)
+
 		echo "Base installed, you might want to reboot now."
 		echo "Also remember to merge /etc by hand!"
 		echo "Remove $BASE/tmp/*.tgz if you want."
