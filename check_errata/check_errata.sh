@@ -38,16 +38,10 @@ if [ -n "$1" ]; then
 	email=$1
 fi
 
-# create the cache directory if it doesn't exist
+# create the cache directory/file if they doesn't exist
 dir=$(cd -- "$(dirname -- "$0")"; pwd)
-if [ ! -d "$dir" ];
-	mkdir -p "$dir"
-fi
-# create the cache if it doesn't exist
-if [ ! -e "$file" ]; then
-	touch "$file"
-fi
-
+if [ ! -d "$dir" ]; then mkdir -p "$dir"; fi
+if [ ! -e "$file" ]; then touch "$file"; fi
 
 # create temporary file
 TMPFILE=$(mktemp) || exit 1
