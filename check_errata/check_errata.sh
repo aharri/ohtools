@@ -38,6 +38,14 @@ if [ -n "$1" ]; then
 	email=$1
 fi
 
+# check for links
+which links 1>/dev/null
+if [ "$?" -eq 0 ]; then
+	browser=links
+else
+	browser=lynx
+fi
+
 # create the cache directory/file if they doesn't exist
 dir=$(cd -- "$(dirname -- "$0")"; pwd)
 if [ ! -d "$dir" ]; then mkdir -p "$dir"; fi
@@ -49,7 +57,7 @@ TMPFILE=$(mktemp) || exit 1
 # fetch new results
 rev=$(uname -r | sed 's/\.//')
 for host in $servers; do
-	data=$(lynx -dump "http://${host}/errata${rev}.html" 2>/dev/null)
+	data=$("$browser" -dump "http://${host}/errata${rev}.html" 2>/dev/null)
 	if [ "$?" -eq 0 ]; then break; fi
 done
 if [ -z "$data" ]; then
