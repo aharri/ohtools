@@ -20,6 +20,9 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 
+# servers
+servers="openbsd.org www.openbsd.org openbsd.alpix.se openbsd.nuug.no"
+
 # email
 email=root@localhost
 
@@ -29,14 +32,20 @@ diff_opts="-u"
 # where to store "cache"
 file=$HOME/.openbsd_errata
 
+
 # override email if specified on the command line
 if [ -n "$1" ]; then
 	email=$1
 fi
 
+# create the cache directory if it doesn't exist
+dir=$(cd -- "$(dirname -- "$0")"; pwd)
+if [ ! -d "$dir" ];
+	mkdir -p "$dir"
+fi
 # create the cache if it doesn't exist
 if [ ! -e "$file" ]; then
-	touch $file
+	touch "$file"
 fi
 
 
@@ -45,14 +54,21 @@ TMPFILE=$(mktemp) || exit 1
 
 # fetch new results
 rev=$(uname -r | sed 's/\.//')
-lynx -dump "http://openbsd.org/errata${rev}.html" > $TMPFILE
+for host in $servers; do
+	data=$(lynx -dump "http://${host}/errata${rev}.html" 2>/dev/null)
+	if [ "$?" -eq 0 ]; then break; fi
+done
+if [ -z "$data" ]; then
+	exit 1
+fi
+print "$data" > "$TMPFILE"
 
 # show the results
-res=$(diff $diff_opts $file $TMPFILE)
+res=$(diff $diff_opts "$file" "$TMPFILE")
 if [ -n "$res" ]; then
 	echo "$res" | mail -s "OpenBSD Errata" "$email"
 fi
 
 # copy the file
-cp -f $TMPFILE $file
-rm -f $TMPFILE 
+cp -f "$TMPFILE" "$file"
+rm -f "$TMPFILE"
