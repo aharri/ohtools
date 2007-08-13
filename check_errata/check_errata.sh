@@ -24,7 +24,7 @@
 servers="openbsd.org www.openbsd.org openbsd.alpix.se openbsd.nuug.no"
 
 # email
-email=root@localhost
+email=root
 
 # use -u for unified diff
 diff_opts="-u"
