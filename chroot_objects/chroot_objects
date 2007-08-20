@@ -1,0 +1,29 @@
+#!/bin/sh
+
+usage_and_exit()
+{
+	echo "$0 directory library"
+	echo "directory: location of your chroot"
+	echo "library: .so file which dependencies to copy"
+	exit 1
+}
+
+if [ "$#" -lt 2 ] || [ ! -d "$1" ] || [ ! -f "$2" ]; then
+	usage_and_exit
+fi
+
+libnames=$(readelf -d "$2" | fgrep " (NEEDED) " | cut -f 2 -d '[' | cut -f 1 -d ']')
+
+for libname in $libnames; do
+	lib=$(ldconfig -r | fgrep "/${libname}" | awk '{ print $3 }')
+	num=$(echo "$lib" | wc -l)
+	if [ "$num" -ne 1 ]; then
+		echo "something weird with ${libname}, skipping"
+		continue
+	fi
+	dir=$(dirname "$lib")
+
+	mkdir -p "${1}/./${dir}/"
+	cp -p "$lib" "${1}/./${dir}/"
+	#echo "$dir $lib"
+done
