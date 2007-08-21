@@ -12,18 +12,35 @@ if [ "$#" -lt 2 ] || [ ! -d "$1" ] || [ ! -f "$2" ]; then
 	usage_and_exit
 fi
 
-libnames=$(readelf -d "$2" | fgrep " (NEEDED) " | cut -f 2 -d '[' | cut -f 1 -d ']')
-
-for libname in $libnames; do
-	lib=$(ldconfig -r | fgrep "/${libname}" | awk '{ print $3 }')
-	num=$(echo "$lib" | wc -l)
-	if [ "$num" -ne 1 ]; then
-		echo "something weird with ${libname}, skipping"
-		continue
+get_stuff()
+{
+	type=$(file "$1" | cut -f 2 -d ':')
+	if [ "$(echo $type | fgrep 'shared object')" != "" ]; then
+		tempnames=$(readelf -d "$1" | fgrep " (NEEDED) " | cut -f 2 -d '[' | cut -f 1 -d ']')
+		libnames=
+		for temp in $tempnames; do
+			temp=$(ldconfig -r | fgrep "/${temp}" | awk '{ print $3 }')
+			libnames="$libnames $temp"
+		done
+	elif [ "$(echo $type | fgrep 'executable')" != "" ]; then
+		libnames=$(ldd "$1" | egrep -e '(rlib|rtld)' | awk '{ print $7 }')
 	fi
-	dir=$(dirname "$lib")
+}
+parse()
+{
+	get_stuff "$2"
+	for lib in $libnames; do
+		libname=$(basename "$lib")
+		dir=$(dirname "$lib")
 
-	mkdir -p "${1}/./${dir}/"
-	cp -p "$lib" "${1}/./${dir}/"
-	#echo "$dir $lib"
-done
+		if [ ! -f "${1}/./${lib}" ]; then
+			mkdir -p "${1}/./${dir}/"
+			cp -p "$lib" "${1}/./${dir}/"
+			echo "${3}${lib}"
+			parse "$1" "$lib" "$3  "
+		fi
+	done
+}
+
+echo "starting copy"
+parse "$1" "$2" ""
