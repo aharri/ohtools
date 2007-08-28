@@ -68,15 +68,17 @@ function fetch_files
 	for file in $@; do
 
 		# skip parameter
-		if [ "$file" = '-f' ]; then
+		# --nocomp   don't compare checksums
+		# --nocheck  don't check for succesful download
+		if [ "$file" = '--nocomp' ] || [ "$file" = '--nocheck' ]; then
 			continue
 		fi
 
 		check_md5 "$file"
-		if [ "$?" -eq 0 ] && [ "$1" != '-f' ]; then
+		if [ "$?" -eq 0 ] && [ "$1" != '--nocomp' ]; then
 			printf "%-30s %s\n" "$file" "CACHED (md5 checked)"
 			continue
-		elif [ -e "$BASE/tmp/$file" ] && [ "$1" != '-f' ]; then
+		elif [ -e "$BASE/tmp/$file" ] && [ "$1" != '--nocomp' ]; then
 			check_filesize "$file"
 			if [ "$?" -eq 0 ]; then
 				printf "%-30s %s\n" "$file" "CACHED (size checked)"
@@ -104,7 +106,9 @@ function fetch_files
 			printf "%-30s %s\n" $file "GOOD"
 		else 
 			printf "%-30s %s\n" $file "FAILED with code $code"
-			exit 1
+			if [ "$1" != '--nocheck' ]; then
+				exit 1
+			fi
 		fi
 	done
 }

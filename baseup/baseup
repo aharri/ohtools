@@ -39,10 +39,11 @@ case "$_VAL" in
 
 		echo "Fetch source $source."
 		echo "Fetching MD5 sums and index."
-		fetch_files -f MD5 index.txt
+		fetch_files --nocomp MD5 index.txt
 
 		echo "Fetching new kernels."
-		fetch_files bsd.rd bsd bsd.mp
+		fetch_files bsd.rd bsd
+		fetch_files --nocheck bsd.mp
 
 		# fetch only selected files
 		echo "Fetching base packages."
