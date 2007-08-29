@@ -41,9 +41,11 @@ case "$_VAL" in
 		echo "Fetching MD5 sums and index."
 		fetch_files --nocomp MD5 index.txt
 
-		echo "Fetching new kernels."
+		echo "Fetching new base images."
 		fetch_files bsd.rd bsd
-		fetch_files --nocheck bsd.mp
+		echo "Fetching architecture dependent files. Some may fail."
+		echo "Boot files will not be installed, update manually."
+		fetch_files --nocheck bsd.mp boot ofwboot
 
 		# fetch only selected files
 		echo "Fetching base packages."
