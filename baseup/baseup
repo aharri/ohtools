@@ -23,6 +23,13 @@ get_config state || set_config state install_kernel
 get_config state
 case "$_VAL" in
 	"install_kernel" ) # in the middle of fetching files
+		# Clean from previous run.
+		echo -n "Wipe out files from previous run? [Y/n] "
+		read ans
+		if [ "$ans" = "y" ] || [ -z "$ans" ]; then
+			rm -f "${BASE}/tmp/"*.tgz "${BASE}/tmp/"bsd* "${BASE}/tmp/"*boot*
+		fi
+
 
 		# SOURCE
 		get_config source
