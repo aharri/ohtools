@@ -1,9 +1,5 @@
 #!/bin/sh
-
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
-#
-# All rights reserved.
-#
 
 # Version 1.0
 
@@ -125,5 +121,3 @@ case "$_VAL" in
 		set_config state install_kernel
 	;;
 esac
-
-# $ specification.txt 2007-05-30 13:59 GMT+2 iku $
