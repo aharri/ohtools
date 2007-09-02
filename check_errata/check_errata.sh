@@ -1,9 +1,5 @@
 #!/bin/sh
 
-# Very simple OpenBSD errata checker. Version 1.0.
-# Run this once a day, for example:
-# 01 05 * * * $HOME/bin/check_errata.sh [email] 
-
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -19,6 +15,10 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
+
+# Very simple OpenBSD errata checker. Version 1.0.
+# Run this once a day, for example:
+# 01 05 * * * $HOME/bin/check_errata.sh [email] 
 
 # servers
 servers="openbsd.org www.openbsd.org openbsd.alpix.se openbsd.nuug.no"
