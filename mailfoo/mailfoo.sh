@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
+
 DEFAULT="${HOME}/mboxfoo"
 SPAMBOX="${HOME}/mail/spamfoo"
 LOGFILE="${HOME}/.mailfoolog"

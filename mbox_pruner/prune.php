@@ -1,6 +1,8 @@
 #!/usr/local/bin/php
 <?php
 
+// Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
+
 if ($argc != 3)
 	die("incorrect parameters\n");
 

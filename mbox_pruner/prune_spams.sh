@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
+
 BASE=$(cd -- "$(dirname -- "$0")"; pwd)
 home=/home
 getuids=${BASE}/getuids.sh

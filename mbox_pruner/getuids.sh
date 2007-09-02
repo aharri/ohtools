@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
+
 # [min,max[
 min=1000
 max=2000

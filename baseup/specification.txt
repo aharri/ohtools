@@ -1,3 +1,4 @@
+Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 
 --- Base up ---
 
@@ -42,6 +43,3 @@ but there's always a chance for bug.
   than base system of OpenBSD.
 - Enough storage space (~200M of temporary space)
 - Sane user.
-
-
-$ specification.txt 2007-05-30 13:59 GMT+2 iku $
