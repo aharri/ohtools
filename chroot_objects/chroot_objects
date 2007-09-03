@@ -2,6 +2,8 @@
 
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 
+# Version 1.0 / 2007-09-03
+
 usage_and_exit()
 {
 	echo "$0 directory library"
