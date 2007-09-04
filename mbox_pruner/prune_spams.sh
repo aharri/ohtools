@@ -1,6 +1,9 @@
 #!/bin/sh
-
+#
+# $Id: prune_spams.sh,v 1.3 2007/09/04 17:09:04 iku Exp $
+#
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
+#
 
 BASE=$(cd -- "$(dirname -- "$0")"; pwd)
 home=/home

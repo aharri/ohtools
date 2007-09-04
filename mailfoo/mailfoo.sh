@@ -1,6 +1,9 @@
 #!/bin/sh
-
+# 
+# $Id: mailfoo.sh,v 1.3 2007/09/04 17:04:08 iku Exp $
+#
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
+#
 
 DEFAULT="${HOME}/mboxfoo"
 SPAMBOX="${HOME}/mail/spamfoo"

@@ -3,3 +3,6 @@ for Slackware Linux.
 
 Run this after you have upgraded packages that
 have installed new configuration files (.new suffix).
+
+-- 
+$Id: README,v 1.2 2007/09/04 17:09:04 iku Exp $

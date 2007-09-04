@@ -1,5 +1,6 @@
 #!/bin/sh
-
+#
+# $Id: check_errata.sh,v 1.7 2007/09/04 17:02:58 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -16,7 +17,7 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 
-# Very simple OpenBSD errata checker. Version 1.0.
+# Very simple OpenBSD errata checker.
 # Run this once a day, for example:
 # 01 05 * * * $HOME/bin/check_errata.sh [email] 
 

@@ -1,5 +1,7 @@
 #!/bin/sh
-
+#
+# $Id: mergeslacker.sh,v 1.4 2007/09/04 17:09:04 iku Exp $
+#
 # Copyright (c) 2006 Antti Harri <iku@openbsd.fi>
 #
 # Permission to use, copy, modify, and distribute this software for any
@@ -13,8 +15,7 @@
 # WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Mergeslacker version 1.0.
+#
 
 TMPFILE=
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin

@@ -1,7 +1,11 @@
 #!/usr/local/bin/php
 <?php
-
-// Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
+/*
+ * $Id: prune.php,v 1.3 2007/09/04 17:09:04 iku Exp $
+ *
+ * Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
+ *
+ */
 
 if ($argc != 3)
 	die("incorrect parameters\n");

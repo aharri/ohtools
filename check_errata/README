@@ -1,1 +1,4 @@
 Simple and automatic OpenBSD Errata entry checker.
+
+-- 
+$Id: README,v 1.2 2007/09/04 17:02:58 iku Exp $

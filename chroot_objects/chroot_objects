@@ -1,8 +1,9 @@
 #!/bin/sh
-
+# 
+# $Id: chroot_objects,v 1.5 2007/09/04 17:03:35 iku Exp $
+#
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
-
-# Version 1.0 / 2007-09-03
+#
 
 usage_and_exit()
 {

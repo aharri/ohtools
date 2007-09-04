@@ -1,6 +1,9 @@
 #!/bin/sh
-
+# 
+# $Id: getuids.sh,v 1.3 2007/09/04 17:09:04 iku Exp $
+#
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
+#
 
 # [min,max[
 min=1000
@@ -25,6 +28,5 @@ for line in $(cat /etc/passwd); do
 	if [ "$uid" -ge $min ] && [ "$uid" -lt $max ]; then
 		user=$(echo "$line" | cut -f 1 -d ':')
 		echo "$line"
-		#echo "found uid matching range $min:$max, user is $user"
 	fi
 done

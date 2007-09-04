@@ -1,6 +1,9 @@
 #!/bin/sh
-
+#
+# $Id: functions.sh,v 1.11 2007/09/04 16:59:46 iku Exp $
+#
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
+#
 
 function query_index
 {
