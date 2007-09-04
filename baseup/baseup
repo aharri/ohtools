@@ -1,8 +1,9 @@
 #!/bin/sh
-
+#
+# $Id: baseup,v 1.18 2007/09/04 16:53:03 iku Exp $
+#
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
-
-# Version 1.0
+#
 
 VERBOSE=1
 CURL_OPTS="-s -4"
