@@ -1,6 +1,6 @@
 #!/bin/sh
 # 
-# $Id: chroot_objects,v 1.5 2007/09/04 17:03:35 iku Exp $
+# $Id: chroot_objects,v 1.6 2007/09/09 18:34:37 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -19,17 +19,20 @@ fi
 
 get_stuff()
 {
-	type=$(file "$1" | cut -f 2 -d ':')
-	if [ "$(echo $type | fgrep 'shared object')" != "" ]; then
-		tempnames=$(readelf -d "$1" | fgrep " (NEEDED) " | cut -f 2 -d '[' | cut -f 1 -d ']')
-		libnames=
-		for temp in $tempnames; do
-			temp=$(ldconfig -r | fgrep "/${temp}" | awk '{ print $3 }')
-			libnames="$libnames $temp"
-		done
-	elif [ "$(echo $type | fgrep 'executable')" != "" ]; then
+# OpenBSD 4.2 and forward can handle files with ldd.
+# There's also another matter: readelf didn't list
+# all dependencies that xsl.so needed.. weird.
+#	type=$(file "$1" | cut -f 2 -d ':')
+#	if [ "$(echo $type | fgrep 'shared object')" != "" ]; then
+#		tempnames=$(readelf -d "$1" | fgrep " (NEEDED) " | cut -f 2 -d '[' | cut -f 1 -d ']')
+#		libnames=
+#		for temp in $tempnames; do
+#			temp=$(ldconfig -r | fgrep "/${temp}" | awk '{ print $3 }')
+#			libnames="$libnames $temp"
+#		done
+#	elif [ "$(echo $type | fgrep 'executable')" != "" ]; then
 		libnames=$(ldd "$1" | egrep -e '(rlib|rtld)' | awk '{ print $7 }')
-	fi
+#	fi
 }
 parse()
 {
