@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: check_errata.sh,v 1.7 2007/09/04 17:02:58 iku Exp $
+# $Id: check_errata.sh,v 1.8 2007/09/16 17:42:20 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -17,10 +17,7 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 
-# Very simple OpenBSD errata checker.
-# Run this once a day, for example:
-# 01 05 * * * $HOME/bin/check_errata.sh [email] 
-
+### CONFIGURATION
 # servers
 servers="openbsd.org www.openbsd.org openbsd.alpix.se openbsd.nuug.no"
 
@@ -32,7 +29,7 @@ diff_opts="-u"
 
 # where to store "cache"
 file=$HOME/.openbsd_errata
-
+### END OF CONFIGURATION
 
 # override email if specified on the command line
 if [ -n "$1" ]; then
