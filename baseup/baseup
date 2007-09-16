@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: baseup,v 1.18 2007/09/04 16:53:03 iku Exp $
+# $Id: baseup,v 1.19 2007/09/16 19:44:28 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -27,7 +27,6 @@ case "$_VAL" in
 		if [ "$ans" = "y" ] || [ -z "$ans" ]; then
 			rm -f "${BASE}/tmp/"*.tgz "${BASE}/tmp/"bsd* "${BASE}/tmp/"*boot*
 		fi
-
 
 		# SOURCE
 		get_config source
@@ -118,7 +117,12 @@ case "$_VAL" in
 
 		echo "Base installed, you might want to reboot now."
 		echo "Also remember to merge /etc by hand!"
-		echo "Remove $BASE/tmp/*.tgz if you want."
+
+		echo "Run mtree? (recommend) (Y/n) "
+		read ans
+		if [ "$ans" != "n" ]; then
+			mtree -qdef /etc/mtree/4.4BSD.dist -p / -u
+		fi
 
 		set_config state install_kernel
 	;;
