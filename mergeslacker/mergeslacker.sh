@@ -1,8 +1,8 @@
 #!/bin/sh
 #
-# $Id: mergeslacker.sh,v 1.4 2007/09/04 17:09:04 iku Exp $
+# $Id: mergeslacker.sh,v 1.5 2007/09/16 17:25:00 iku Exp $
 #
-# Copyright (c) 2006 Antti Harri <iku@openbsd.fi>
+# Copyright (c) 2006,2007 Antti Harri <iku@openbsd.fi>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -95,7 +95,7 @@ for file in $filelist; do
 				;;
 				"i")
 					TMPFILE=$(mktemp -q /tmp/mergeslacker.XXXXXXXXXX)
-					if [ "$?" != 0 ]; then
+					if [ "$?" -ne 0 ]; then
 						echo "error creating temporary file, trying to continue"
 						continue
 					fi
