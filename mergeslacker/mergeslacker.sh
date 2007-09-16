@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: mergeslacker.sh,v 1.5 2007/09/16 17:25:00 iku Exp $
+# $Id: mergeslacker.sh,v 1.6 2007/09/16 17:26:25 iku Exp $
 #
 # Copyright (c) 2006,2007 Antti Harri <iku@openbsd.fi>
 #
@@ -100,7 +100,6 @@ for file in $filelist; do
 						continue
 					fi
 					sdiff -o "$TMPFILE" "$origfile" "$file"
-
 					continue
 
 				;;
