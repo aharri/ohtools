@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: attach,v 1.1 2007/09/17 19:28:59 iku Exp $
+# $Id: attach,v 1.2 2007/09/17 19:50:44 iku Exp $
 #
 # Copyright (c) 2006,2007 Antti Harri <iku@openbsd.fi>
 #
@@ -123,11 +123,12 @@ case $DEVCLASS in
 				logger "Failed to extract file $filename"
 			fi
 		done
-		# transform file
+		# Transform file
 		jhead -nf"$CAMFILEFORMAT" "${TMP}/"*.jpg 1>/dev/null
 		year=$(date +%Y)
 		month=$(date +%m)
 
+		# Move jpegs
 		for file in $(find "$TMP" -type f -iname '*.jpg'); do
 			filename=$(basename "$file")
 			exifyear=$(jhead "$file" | fgrep 'Date/Time' | cut -f 2 -d ':' | tr -d ' ')
@@ -140,7 +141,7 @@ case $DEVCLASS in
 				exifmonth=$month
 			fi
 
-			# XXX: this could be done more securely(?) with mktemp
+			install $CAMUSER $CAMGROUP -m "$CAMDIRMODE" -d "${CAMDIR}/${exifyear}/"
 			install $CAMUSER $CAMGROUP -m "$CAMDIRMODE" -d "${CAMDIR}/${exifyear}/${exifmonth}/"
 			install $CAMUSER $CAMGROUP -m "$CAMFILEMODE" "$file" "${CAMDIR}/${exifyear}/${exifmonth}/"
 			if [ "$?" -eq 0 ]; then
@@ -149,7 +150,9 @@ case $DEVCLASS in
 				logger "Failed to copy file $filename from TMP"
 			fi
 		done
+		# Support for other than jpg follows
 		for file in $(find "$TMP" -type f); do
+			install $CAMUSER $CAMGROUP -m "$CAMDIRMODE" -d "${CAMDIR}/${year}/"
 			install $CAMUSER $CAMGROUP -m "$CAMDIRMODE" -d "${CAMDIR}/${year}/${month}/"
 			install $CAMUSER $CAMGROUP -m "$CAMFILEMODE" "$file" "${CAMDIR}/${year}/${month}/"
 			if [ "$?" -eq 0 ]; then
