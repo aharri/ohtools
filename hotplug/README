@@ -1,0 +1,13 @@
+Attach script with automatic digital camera
+extraction. 
+
+1. Install into /etc/hotplug/attach
+2. Open the script with your editor and configure it
+3. Activate hotplugd: 
+   # egrep -q '^hotplugd_flags' /etc/rc.conf.local || echo \
+     'hotplugd_flags=""' >> /etc/rc.conf.local
+   # hotplugd
+4. Plug in your USB devices :-)
+
+-- 
+$Id: README,v 1.1 2007/09/17 19:28:59 iku Exp $
