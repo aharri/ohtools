@@ -1,14 +1,21 @@
 #!/usr/local/bin/php
 <?php
 /*
- * $Id: prune.php,v 1.3 2007/09/04 17:09:04 iku Exp $
+ * $Id: prune.php,v 1.4 2007/09/23 20:37:10 iku Exp $
  *
  * Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
  *
  */
 
+function usage()
+{
+	print ("prune.php time mbox\n\n");
+	print ("time    Delete mails older than /time/ days.\n");
+	print ("mbox    Filename of the mbox file to prune.\n");
+	die();
+}
 if ($argc != 3)
-	die("incorrect parameters\n");
+	usage();
 
 if (!is_numeric($argv[1]))
 	die("parameter 1 is not a number: ".$argv[1]."\n");
