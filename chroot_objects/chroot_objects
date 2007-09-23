@@ -1,6 +1,6 @@
 #!/bin/sh
 # 
-# $Id: chroot_objects,v 1.6 2007/09/09 18:34:37 iku Exp $
+# $Id: chroot_objects,v 1.7 2007/09/23 20:35:24 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -42,7 +42,13 @@ parse()
 		dir=$(dirname "$lib")
 
 		if [ ! -f "${1}/./${lib}" ]; then
-			mkdir -p "${1}/./${dir}/"
+			#st_dev=0 st_ino=656640 st_mode=040755 st_nlink=33 st_uid=0 st_gid=0 st_rdev=2614252 st_size=3072 st_atime=1190570280 st_mtime=1190057186 st_ctime=1190057186 st_blksize=16384 st_blocks=8 st_flags=0
+			stat=$(stat -s "$dir")
+			grp=$(echo "$stat" | awk '{ print $6 }')
+			uid=$(echo "$stat" | awk '{ print $5 }')
+			mode=$(echo "$stat" | awk '{ print $3 }')
+			install -d -g "$gpr" -o "$uid" -m "$mode" "${1}/./${dir}/"
+			#mkdir -p "${1}/./${dir}/"
 			cp -p "$lib" "${1}/./${dir}/"
 			echo "${3}${lib}"
 			parse "$1" "$lib" "$3  "
