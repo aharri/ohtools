@@ -1,6 +1,6 @@
 #!/bin/sh
 # 
-# $Id: chroot_objects,v 1.8 2007/09/23 20:36:41 iku Exp $
+# $Id: chroot_objects,v 1.9 2007/09/23 20:44:12 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -46,7 +46,7 @@ parse()
 			stat=$(stat -s "$dir")
 			grp=$(echo "$stat" | awk '{ print $6 }' | cut -f 2 -d '=')
 			uid=$(echo "$stat" | awk '{ print $5 }' | cut -f 2 -d '=')
-			mode=$(echo "$stat" | awk '{ print $3 }' | cut -f 2 -d '=')
+			mode=$(echo "$stat" | awk '{ print $3 }' | cut -b 11-)
 			install -d -g "$gpr" -o "$uid" -m "$mode" "${1}/./${dir}/"
 			#mkdir -p "${1}/./${dir}/"
 			cp -p "$lib" "${1}/./${dir}/"
