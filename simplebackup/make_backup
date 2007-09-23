@@ -1,0 +1,96 @@
+#!/bin/sh
+# 
+# $Id: make_backup,v 1.1 2007/09/23 22:33:10 iku Exp $
+#
+# Copyright (c) 2004,2005 Antti Harri <iku@openbsd.fi>
+#
+# Permission to use, copy, modify, and distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+# simple script for backing up data
+#
+
+# Simple backuper tool. Designed for OpenBSD, probably
+# works on other systems as well.
+
+# BUGS: does not include directories under excluded tree, example:
+# exclude: /mirrors, include: /mirrors/unofficial
+
+# 13-02-2005 added $fileprefix variable
+# 13-02-2005 fixed script to include symlinks, devicenodes etc..
+# 13-02-2005 fixed to be compatible with Linux system (removed `read`)
+# 13-02-2005 fixed typos and missing 
+
+# destination of the tarball
+destdir="/backups/"
+# include everything under this directory
+includedirs="/"
+# exclude directories from $includedirs (use slash at the end of each dir)
+excludedirs="/tmp/ /usr/src/ /usr/ports/ /mirrors/ /var/www/mirrors/ /stuff/ /backups/"
+# filename prefix for the actual tarball
+fileprefix="system_backup"
+# delete old, use 0 to disable
+deletetime="12"
+
+# backup to remote host?
+backup=0
+backup_flags="-B -C" # batch mode & compression
+backup_key="/backups/.id_dsa" # generate with ssh-keygen -t dsa
+backup_ruser="_backup@router"
+backup_rpath="server/"
+
+# DON'T CHANGE ANYTHING BELOW THIS LINE UNLESS YOU KNOW WHAT YOU'RE DOING
+
+# function to remove temporary files and directories
+function exit_cleanup
+{
+	if [ -e "${tempdir}/filelist" ]; then
+		rm -f "${tempdir}/filelist"
+		rmdir "${tempdir}"
+	fi
+	exit
+}
+trap "echo 'user aborted, cleaning up and exiting...'; exit_cleanup" 2
+date="`date +%d-%m-%Y`"
+seconds="`date +%s`"
+tempdir="/tmp/.foo-${seconds}"
+umask 0077
+
+# create temporary directory
+mkdir "${tempdir}" 2>/dev/null
+if [ "${?}" -ne 0 ]; then
+	echo "error" 
+	exit
+fi
+
+# format the excluded dirs variable
+excludedirs="`echo \(^${excludedirs}\) | sed 's/\ /\|^/g'`"
+
+# make the list
+find "${includedirs}" \! -type d | egrep -v "${excludedirs}" > "${tempdir}/filelist"
+
+# tar and gzip the stuff
+if [ "${deletetime}" != "0" ]; then
+	tar zcf "${destdir}/${fileprefix}-${date}.tar.gz" -I "${tempdir}/filelist"
+	echo "deleting old "
+	find "${destdir}" -maxdepth 1 -name "${fileprefix}-*.tar.gz" -mtime "+${deletetime}" -exec rm -f {} \;
+else 
+	tar zcf "${destdir}/${fileprefix}-${date}.tar.gz" -I "${tempdir}/filelist"
+fi
+
+if [ "$backup" = "1" ]; then
+	echo "transferring to remote host"
+	if [ "${backup_key}" != "" ]; then
+		backup_key="-i ${backup_key}"
+	fi
+	scp ${backup_flags} ${backup_key} "${destdir}/${fileprefix}-${date}.tar.gz" "${backup_ruser}:${backup_rpath}" 1>/dev/null
+fi
+exit_cleanup
