@@ -1,6 +1,6 @@
 #!/bin/sh
 # 
-# $Id: chroot_objects,v 1.12 2007/09/23 20:55:18 iku Exp $
+# $Id: chroot_objects,v 1.13 2007/09/23 20:56:22 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -54,6 +54,7 @@ parse()
 				mode=$(echo "$stat" | awk '{ print $3 }' | cut -b 11-)
 				install -d -g "$grp" -o "$uid" -m "$mode" "${1}${i}"
 			done
+			unset IFS
 			#mkdir -p "${1}/./${dir}/"
 			cp -p "$lib" "${1}/./${dir}/"
 			echo "${3}${lib}"
