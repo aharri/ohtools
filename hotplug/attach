@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: attach,v 1.2 2007/09/17 19:50:44 iku Exp $
+# $Id: attach,v 1.3 2007/09/24 22:25:56 iku Exp $
 #
 # Copyright (c) 2006,2007 Antti Harri <iku@openbsd.fi>
 #
@@ -18,8 +18,8 @@ PRINTDEVS='laserjet 2200'          # List of printer names in
 CAMDEVS='photosmart 735'           # List of camera names in 
                                    # lower-case(!) separated with ;
 CAMDIR='/stuff/pics'               # Directory where to extract
-CAMDIRMODE='0770'                  # Mandatory
-CAMFILEMODE='0660'                 # Mandatory
+CAMDIRMODE='0775'                  # Mandatory
+CAMFILEMODE='0664'                 # Mandatory
 CAMFILEFORMAT='%Y%m%d-%H:%M.%S'    # Filename format. See jhead(1)/strftime(3)
 CAMUSER=                           # Use empty for default user
 CAMGROUP='pics'                    # Use empty for default group
