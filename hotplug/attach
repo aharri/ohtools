@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: attach,v 1.5 2007/09/29 21:38:17 iku Exp $
+# $Id: attach,v 1.6 2007/09/29 21:41:13 iku Exp $
 #
 # Copyright (c) 2006,2007 Antti Harri <iku@openbsd.fi>
 #
@@ -27,6 +27,10 @@
 # iku@kameli:~/temp$ ls -ld 2007 2007/09
 # drwxr-xr-x    3 iku      users         512 Sep 30 00:11 2007
 # drwx------    2 iku      users         512 Sep 30 00:11 2007/09
+#
+# CAVEATS: Digicamera part will assume the partition on the
+# flash is 'i' and tries to mount specifically it. Should be
+# pretty easy to adjust to be generic though.
 
 ### CONFIGURATION
 # Common
