@@ -1,5 +1,9 @@
+--- Description ---
+
 Attach script with automatic digital camera
-extraction. 
+extraction and USB printer linker. 
+
+--- Installation ---
 
 1. Install into /etc/hotplug/attach
 2. Open the script with your editor and configure it
@@ -10,4 +14,4 @@ extraction.
 4. Plug in your USB devices :-)
 
 -- 
-$Id: README,v 1.1 2007/09/17 19:28:59 iku Exp $
+$Id: README,v 1.2 2007/09/29 19:48:50 iku Exp $
