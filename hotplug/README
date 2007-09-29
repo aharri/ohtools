@@ -3,6 +3,19 @@
 Attach script with automatic digital camera
 extraction and USB printer linker. 
 
+You can make up-to-date symlink with this
+script if you have multiple USB printers
+that can pop up as any ulptX is available.
+
+With automatic digicam extraction you can
+just hook your camera into USB port and 
+wait for the script to extract images from
+it. Remember to check your camera is in USB,
+and *not* PTP mode! The files will be removed
+from the camera as soon as transfer is complete,
+named after EXIF header's date and shoved into
+appropriate directories such as 2007/09/.
+
 --- Requirements ---
 
 OpenBSD that includes hotplug daemon (All
@@ -29,4 +42,4 @@ Jhead from graphics/jhead.
 4. That's it. Plug in your USB devices. :-)
 
 -- 
-$Id: README,v 1.3 2007/09/29 21:17:46 iku Exp $
+$Id: README,v 1.4 2007/09/29 21:36:51 iku Exp $
