@@ -3,9 +3,15 @@
 Attach script with automatic digital camera
 extraction and USB printer linker. 
 
-You can make up-to-date symlink with this
-script if you have multiple USB printers
-that can pop up as any ulptX is available.
+You can make up-to-date symlinks with this
+script if you have multiple USB printers.
+When plugged in the printer will be assigned
+the first available ulptX device node. With
+just one printer this isn't a problem, but
+with several the names can change so having
+a symlink in /dev will fix this issue. Hotplug
+will update your symlink and you can configure
+your printing spooler to use the symlink.
 
 With automatic digicam extraction you can
 just hook your camera into USB port and 
@@ -42,4 +48,4 @@ Jhead from graphics/jhead.
 4. That's it. Plug in your USB devices. :-)
 
 -- 
-$Id: README,v 1.4 2007/09/29 21:36:51 iku Exp $
+$Id: README,v 1.5 2007/09/29 22:05:27 iku Exp $
