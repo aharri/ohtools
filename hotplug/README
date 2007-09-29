@@ -3,15 +3,30 @@
 Attach script with automatic digital camera
 extraction and USB printer linker. 
 
+--- Requirements ---
+
+OpenBSD that includes hotplug daemon (All
+recent enough releases do).
+
+-- For printer linker --
+
+Nothing external.
+
+-- For digital cameras --
+
+Jhead from graphics/jhead.
+
 --- Installation ---
 
-1. Install into /etc/hotplug/attach
-2. Open the script with your editor and configure it
+1. Open the script with your editor and change the
+   configuration part.
+2. Install as /etc/hotplug/attach:
+   # install -o root -g wheel -m 755 attach /etc/hotplug/attach
 3. Activate hotplugd: 
    # egrep -q '^hotplugd_flags' /etc/rc.conf.local || echo \
      'hotplugd_flags=""' >> /etc/rc.conf.local
    # hotplugd
-4. Plug in your USB devices :-)
+4. That's it. Plug in your USB devices. :-)
 
 -- 
-$Id: README,v 1.2 2007/09/29 19:48:50 iku Exp $
+$Id: README,v 1.3 2007/09/29 21:17:46 iku Exp $
