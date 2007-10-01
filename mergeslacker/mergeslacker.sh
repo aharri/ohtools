@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: mergeslacker.sh,v 1.7 2007/10/01 20:41:31 iku Exp $
+# $Id: mergeslacker.sh,v 1.8 2007/10/01 20:58:04 iku Exp $
 #
 # Copyright (c) 2006,2007 Antti Harri <iku@openbsd.fi>
 #
@@ -48,7 +48,7 @@ for file in $filelist; do
 	# User has modified files or the newly shipped file
 	# differs otherwise with the old.
 	else
-		while [ 0 ]; do
+		while true; do
 			if [ -n "$TMPFILE" ]; then
 				echo "Diff'ed file exists ($file)"
 				echo ""
