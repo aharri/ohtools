@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: mergeslacker.sh,v 1.6 2007/09/16 17:26:25 iku Exp $
+# $Id: mergeslacker.sh,v 1.7 2007/10/01 20:41:31 iku Exp $
 #
 # Copyright (c) 2006,2007 Antti Harri <iku@openbsd.fi>
 #
@@ -26,34 +26,35 @@ for file in $filelist; do
 	origfile=$(echo $file | sed 's/\.new$//')
 	basename=$(basename "$origfile")
 
-	# original doesn't exist
+	# Original doesn't exist.
 	if [ ! -e "$origfile" ]; then
 		echo "no such file $basename, moving $file"
-		cp "$file" "$origfile"
-		rm -f "$file"
+		# Do mv instead of cp+rm to keep permissions
+		# set by packager.
+		mv "$file" "$origfile"
 		continue
 	fi
 	
-	# original exists, diff both
+	# Original exists, diff both.
 	cmp=$(cmp -s "$origfile" "$file")
 	cmp=$?
 
-	# no difference -> delete .new
+	# No difference -> delete .new .
 	if [ "$cmp" -eq 0 ]; then
 		echo "deleting $file"
 		rm -f "$file"
 		continue
 
-	# user has modified files or the newly shipped file
-	# differs otherwise with the old
+	# User has modified files or the newly shipped file
+	# differs otherwise with the old.
 	else
 		while [ 0 ]; do
-			if [ "$TMPFILE" != "" ]; then
+			if [ -n "$TMPFILE" ]; then
 				echo "Diff'ed file exists ($file)"
 				echo ""
 				echo "[D]elete the temporary file and go back to the previous menu"
 				echo "[I]nstall the newly created file"
-				echo "[V]iew the contents"
+				echo "[v]iew the contents"
 				read ans
 				case "$ans" in
 					"D")
@@ -69,7 +70,7 @@ for file in $filelist; do
 						TMPFILE=
 						break
 					;;
-					"V")
+					"v")
 						more "$TMPFILE"
 						continue
 					;;
