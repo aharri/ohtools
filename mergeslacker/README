@@ -1,6 +1,8 @@
 Very small but robust configuration merging tool
 for Slackware Linux and distributions with similar
 package management such as Tukaani Linux.
+Distros using Pacman (such as Arch Linux) for
+package management should work almost out of the box.
 
 Required tools only include general system tools
 such as cp, rm, diff and so on. Also sdiff is 
@@ -11,4 +13,4 @@ The newly installed configuration files (.new suffix)
 will be compared and merged with existing files.
 
 -- 
-$Id: README,v 1.3 2007/09/16 17:25:00 iku Exp $
+$Id: README,v 1.4 2007/10/01 15:04:25 iku Exp $
