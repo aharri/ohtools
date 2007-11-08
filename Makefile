@@ -11,7 +11,10 @@ PROJS=\
 
 SYSCONFDIR=/etc
 PREFIX?=/usr/local
-DP=${DESTDIR}${PREFIX}
+
+BSD_INSTALL_DATA_DIR=install -d -o root -g bin -m 755
+BSD_INSTALL_DATA=install -c -o root -g bin -m 444
+BSD_INSTALL_SCRIPT=install -c -o root -g bin -m 555
 
 .PHONY: ${PROJS}
 
@@ -19,18 +22,18 @@ install: generic_install_routine ${PROJS}
 
 baseup:
 	@echo "Installing project specific files"
-	@echo ${BSD_INSTALL_SCRIPT} $@/functions.sh ${DP}/libexec/baseup_functions.sh
-	@echo perl -pi -e "s,^(CONFIG=).*,\1${SYSCONFDIR}/baseup.conf," ${DP}/sbin/$@
-	@echo perl -pi -e "s,^(FUNCS=).*,\1${DP}/libexec/baseup_functions.sh," ${DP}/sbin/$@
-	@echo perl -pi -e "s,^(TEMPS=).*,\1/var/tmp/$@/," ${DP}/sbin/$@
+	${BSD_INSTALL_SCRIPT} $@/functions.sh ${PREFIX}/libexec/baseup_functions.sh
+	perl -pi -e "s,^(CONFIG=).*,\1${SYSCONFDIR}/baseup.conf," ${PREFIX}/sbin/$@
+	perl -pi -e "s,^(FUNCS=).*,\1${PREFIX}/libexec/baseup_functions.sh," ${PREFIX}/sbin/$@
+	perl -pi -e "s,^(TEMPS=).*,\1/var/tmp/$@/," ${PREFIX}/sbin/$@
 
 generic_install_routine:
 .for p in ${PROJS}
 	@echo "Installing documentation"
-	@echo ${BSD_INSTALL_DATA_DIR} ${DP}/share/doc/$p
-	@echo ${BSD_INSTALL_DATA} $p/LICENSE ${DP}/share/doc/$p/
-	@-echo ${BSD_INSTALL_DATA} $p/doc/* ${DP}/share/doc/$p/
+	${BSD_INSTALL_DATA_DIR} ${PREFIX}/share/doc/$p
+	${BSD_INSTALL_DATA} $p/LICENSE ${PREFIX}/share/doc/$p/
+	-${BSD_INSTALL_DATA} $p/doc/* ${PREFIX}/share/doc/$p/
 
 	@echo "Installing script"
-	@echo ${BSD_INSTALL_SCRIPT} $p/$p ${DP}/sbin/
+	${BSD_INSTALL_SCRIPT} $p/$p ${PREFIX}/sbin/
 .endfor
