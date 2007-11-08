@@ -1,29 +1,40 @@
 #!/bin/sh
 #
-# $Id: functions.sh,v 1.11 2007/09/04 16:59:46 iku Exp $
+# $Id: functions.sh,v 1.12 2007/11/08 20:47:49 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
 
+function usage
+{
+	echo "Base upgrader."
+	echo ""
+	echo "Refer to file headers for appropriate copyright and legal notices"
+	echo "or check the packaging for license files."
+	exit 1
+}
+
 function query_index
 {
-	_VAL=$(cd "${BASE}/tmp/" && grep "^$1..\.tgz" index.txt)
+	_VAL=$(cd "${TEMPS}" && grep "^$1..\.tgz" index.txt)
 }
+
 function check_md5
 {
-	(cd "${BASE}/tmp/" && fgrep "($1)" MD5 | md5 -c) 1>/dev/null 2>&1
+	(cd "${TEMPS}" && fgrep "($1)" MD5 | md5 -c) 1>/dev/null 2>&1
 }
 
 function check_filesize
 {
-	local size1=$(egrep "${1}$" "$BASE/tmp/dirlisting.txt" | awk '{ print $5 }')
-	local size2=$(ls -l "$BASE/tmp/$1" 2>/dev/null | awk '{ print $5 }')
+	local size1=$(egrep "${1}$" "${TEMPS}/dirlisting.txt" | awk '{ print $5 }')
+	local size2=$(ls -l "${TEMPS}/$1" 2>/dev/null | awk '{ print $5 }')
 
 	if [ "$size1" = "$size2" ]; then
 		return 0
 	fi
 	return 1
 }
+
 function touch_file
 {
 	if [ ! -e "$1" ]; then
@@ -34,6 +45,7 @@ function touch_file
 		fi
 	fi
 }
+
 function get_config
 {
 	# If configuration does not exist, create it
@@ -47,6 +59,7 @@ function get_config
 	_VAL=$(echo "$_VAL"	| cut -f 2 -d '=' | tail -n 1)
 	
 }
+
 function set_config
 {
 	# If configuration does not exist, create it
@@ -78,7 +91,7 @@ function fetch_files
 		if [ "$?" -eq 0 ] && [ "$1" != '--nocomp' ]; then
 			printf "%-30s %s\n" "$file" "CACHED (md5 checked)"
 			continue
-		elif [ -e "$BASE/tmp/$file" ] && [ "$1" != '--nocomp' ]; then
+		elif [ -e "${TEMPS}/$file" ] && [ "$1" != '--nocomp' ]; then
 			check_filesize "$file"
 			if [ "$?" -eq 0 ]; then
 				printf "%-30s %s\n" "$file" "CACHED (size checked)"
@@ -86,15 +99,15 @@ function fetch_files
 			fi
 		fi
 		# XXX This might be nicer with user prompt
-		rm -f "${BASE}/tmp/${file}"
+		rm -f "${TEMPS}/${file}"
 		case $(echo "$source" | cut -f 1 -d ':') in 
 			file )
 				local src=$(echo "$source" | sed -e 's,^file://,,')
-				cmd=$(cp "${src}/${file}" "${BASE}/tmp/${file}" 1>/dev/null 2>&1)
+				cmd=$(cp "${src}/${file}" "${TEMPS}/${file}" 1>/dev/null 2>&1)
 				code=$?
 			;;
 			ftp|http )
-				cmd=$(ftp -o "${BASE}/tmp/${file}" "${source}/${file}" 1>/dev/null 2>&1)
+				cmd=$(ftp -o "${TEMPS}/${file}" "${source}/${file}" 1>/dev/null 2>&1)
 				code=$?
 			;;
 			* )
@@ -153,6 +166,7 @@ function fetch_listing
 	fi
 	return 0
 }
+
 function init_source
 {
 	echo "Let's begin. What address shall I use as package source?"

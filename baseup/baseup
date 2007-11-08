@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: baseup,v 1.19 2007/09/16 19:44:28 iku Exp $
+# $Id: baseup,v 1.20 2007/11/08 20:47:49 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -9,10 +9,23 @@ VERBOSE=1
 CURL_OPTS="-s -4"
 BASE=$(cd -- "$(dirname -- "$0")"; pwd)
 CONFIG="${BASE}/.config"
+FUNCS="$BASE/functions.sh"
+TEMPS="$BASE/tmp"
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 
+args=$(getopt h $*)
+set -- $args
+while [ $# -ge 0 ]; do
+	case "$1"
+	in
+		'-h') usage ; shift;;
+		'-?') usage ; shift;;
+		--) shift; break;;
+	esac
+done
+
 # pick up functions
-. "$BASE/functions.sh"
+. "$FUNCS"
 
 # check for first run
 get_config state || set_config state install_kernel
@@ -25,7 +38,7 @@ case "$_VAL" in
 		echo -n "Wipe out files from previous run? [Y/n] "
 		read ans
 		if [ "$ans" = "y" ] || [ -z "$ans" ]; then
-			rm -f "${BASE}/tmp/"*.tgz "${BASE}/tmp/"bsd* "${BASE}/tmp/"*boot*
+			rm -f "${TEMPS}/"*.tgz "${TEMPS}/"bsd* "${TEMPS}/"*boot*
 		fi
 
 		# SOURCE
@@ -39,7 +52,7 @@ case "$_VAL" in
 		# FILE FETCHING
 		# always needed files
 		echo "Getting file sizes (for x*.tgz)"
-		fetch_listing "$BASE/tmp/dirlisting.txt"
+		fetch_listing "${TEMPS}/dirlisting.txt"
 
 		echo "Fetch source $source."
 		echo "Fetching MD5 sums and index."
@@ -85,7 +98,7 @@ case "$_VAL" in
 		fi
 
 		cp -f /bsd /bsd.orig
-		cp -f $BASE/tmp/bsd* /
+		cp -f "${TEMPS}/"bsd* /
 
 		echo "Kernel(s) installed"
 
@@ -101,7 +114,7 @@ case "$_VAL" in
 			exit 1
 		fi
 
-		for pkg in $BASE/tmp/*.tgz; do
+		for pkg in "${TEMPS}/"*.tgz; do
 			echo "$pkg" | egrep -q "/etc..\.tgz$"
 			if [ "$?" -eq 0 ]; then
 				echo "Skipping ${pkg}: merge by hand!"
