@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: hotplug_attach.sh,v 1.1 2007/11/09 19:35:17 iku Exp $
+# $Id: hotplug_attach.sh,v 1.2 2007/11/09 19:48:20 iku Exp $
 #
 # Copyright (c) 2006,2007 Antti Harri <iku@openbsd.fi>
 #
@@ -31,27 +31,6 @@
 # CAVEATS: Digicamera part will assume the partition on the
 # flash is 'i' and tries to mount specifically it. Should be
 # pretty easy to adjust to be generic though.
-
-### CONFIGURATION
-# Common
-DEBUG=YES                          # Empty means disabled
-                                   # This is the easiest way to find
-								   # out the devicenames
-# For USB printers:
-PRINTDEVS='laserjet 2200'          # List of printer names in
-                                   # lower-case(!), multiple devices
-								   # separated with semi-colon ;
-# For digital cameras:
-CAMDEVS='photosmart 735'           # List of camera names in 
-                                   # lower-case(!) separated with ;
-CAMDIR='/stuff/pics'               # Directory where to extract
-CAMDIRMODE='0775'                  # Mandatory
-CAMFILEMODE='0664'                 # Mandatory
-CAMFILEFORMAT='%Y%m%d-%H:%M.%S'    # Filename format. See jhead(1)/strftime(3)
-CAMUSER=                           # Use empty for default user
-CAMGROUP='pics'                    # Use empty for default group
-CAMMNT='/mnt/digicam'              # Mount point
-### END OF CONFIGURATION
 
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 
