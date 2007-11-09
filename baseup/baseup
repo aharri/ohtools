@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: baseup,v 1.20 2007/11/08 20:47:49 iku Exp $
+# $Id: baseup,v 1.21 2007/11/09 21:18:04 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -29,6 +29,12 @@ done
 
 # check for first run
 get_config state || set_config state install_kernel
+
+# set up temp directory if it doesn't exist
+if [ ! -d "$TEMPS" ]; then
+	# just mkdir it, we don't have anything secrets to store
+	mkdir -p "$TEMPS" 
+fi
 
 # main
 get_config state
