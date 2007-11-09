@@ -37,6 +37,8 @@ Jhead from graphics/jhead.
 
 --- Installation ---
 
+This section is out of date..
+
 1. Open the script with your editor and change the
    configuration part.
 2. Install as /etc/hotplug/attach:
@@ -48,4 +50,4 @@ Jhead from graphics/jhead.
 4. That's it. Plug in your USB devices. :-)
 
 -- 
-$Id: README,v 1.1 2007/11/09 18:35:44 iku Exp $
+$Id: README,v 1.2 2007/11/09 19:46:36 iku Exp $
