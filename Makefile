@@ -22,11 +22,11 @@ install: generic_install_routine ${PROJS}
 
 baseup:
 	@echo "Installing project specific files for $@"
+	${BSD_INSTALL_SCRIPT} $@/$@ ${PREFIX}/sbin/
 	${BSD_INSTALL_SCRIPT} $@/functions.sh ${PREFIX}/libexec/baseup_functions.sh
 	perl -pi -e "s,^(CONFIG=).*,\1${SYSCONFDIR}/baseup.conf," ${PREFIX}/sbin/$@
-	perl -pi -e "s,^(FUNCS=).*,\1${PREFIX}/libexec/baseup_functions.sh," ${PREFIX}/sbin/$@
+	perl -pi -e "s,^(FUNCS=).*,\1${LOCALBASE}/libexec/baseup_functions.sh," ${PREFIX}/sbin/$@
 	perl -pi -e "s,^(TEMPS=).*,\1/var/tmp/$@/," ${PREFIX}/sbin/$@
-	${BSD_INSTALL_SCRIPT} $@/$@ ${PREFIX}/sbin/
 
 chroot_objects:
 	@echo "Installing project specific files for $@"
