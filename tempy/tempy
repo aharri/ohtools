@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: tempy,v 1.1 2007/11/08 18:25:44 iku Exp $
+# $Id: tempy,v 1.2 2007/11/09 18:19:37 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -39,6 +39,14 @@ GALLERY_DIMS=200x200
 
 # Target aliases
 default="templates"
+
+# Check for configuration in current working directory,
+# it will override settings defined in the file header
+# section.
+
+if [ -f ".tempy" ]; then
+	. '.tempy'
+fi
 
 # Code
 
