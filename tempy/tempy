@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: tempy,v 1.3 2007/11/09 20:19:17 iku Exp $
+# $Id: tempy,v 1.4 2007/11/10 04:32:04 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -17,74 +17,99 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 
-# Configuration
-MASTER=master.html
-TPLS=" \
-	index \
-	news \
-	stuff \
-	supported \
-	games \
-	docs \
-	fordevs \
-	contact"
-PERMS=0600
-GALLERY_FILE=screens
-GALLERY_HTML=screens.html
-GALLERY_DESC=descriptions
-GALLERY_ORIG=screenshots
-GALLERY_THUMB=thumbnails
-GALLERY_DIMS=200x200
+INST_PREFIX=/usr/local
 
 # Target aliases
 default="templates"
 
 # Check for configuration in current working directory,
 # it will override settings defined in the file header
-# section.
+# section (the default parameter).
 
 if [ -f ".tempy" ]; then
 	. ./.tempy
+else
+	echo "Could not read config file .tempy"
+	exit 1
 fi
 
 # Code
+load_plugin()
+{
+	echo "$PLUGINS_LOADED" | fgrep -q -w "$1"
+	if [ "$?" -eq 0 ]; then
+		return 0
+	fi
+	if [ ! -f "${INST_PREFIX}/libexec/tempy_${1}.sh" ]; then
+		return 1
+	fi
+	. "${INST_PREFIX}/libexec/tempy_${1}.sh"
+	PLUGINS_LOADED="$PLUGINS_LOADED $1"
+	return 0
+}
 
 templates()
 {
-	local list=
-	local temp=
-	local update_all=
+#	XXX
+#	local f list temp update_all
+#	local NAME DESC
 
-	for f in ${TPLS}; do
-		if [ -n "$PERMS" ]; then
-			chmod "$PERMS" "$f"
+	TMPFILE_all=$(mktemp) || exit 1
+	TMPFILE_old=$(mktemp) || exit 1
+	TMPFILE_var1=$(mktemp) || exit 1
+
+	IFS='	'
+	printf "$TPLS" | while read -r f NAME DESC; do
+		if [ -n "$PERMS_SOURCE" ]; then
+			chmod "$PERMS_SOURCE" "$f"
 		fi
-		temp="$temp $f"
+		printf '%s\n' "$f" >> "$TMPFILE_all"
 		if [ -z "$update_all" ]; then
 			if [ "${f}.html" -ot "$f" ]; then
-				list="$list $f"
+				printf '%s\n' "$f" >> "$TMPFILE_old"
 			fi
 			if [ "$MASTER" -nt "$f.html" ] ; then
+				printf "1" > "$TMPFILE_var1"
 				update_all=1
 			fi
 		fi
 	done
-	if [ -n "$update_all" ]; then
-		list=$temp
+	unset IFS
+
+	if [ "$(cat $TMPFILE_var1)" -eq 1 ]; then
+		list=$(cat "$TMPFILE_all")
+	else
+		list=$(cat "$TMPFILE_old")
 	fi
+	rm -f "$TMPFILE_all" "$TMPFILE_old" "$TMPFILE_var1"
+
 	for f in $list; do
 		echo "Updating ${f}.html"
-		rm -f "$f.html.tmp" || exit 1
+		TMPFILE=$(mktemp) || exit 1
+		IFS=
 		cat "$MASTER" | while read -r temp; do
 			case $temp in
-				@menu@)     menu "$f" ;;
-				@content@)  cat "$f" ;;
+				@navi@)     load_plugin navi && navi "$f" ;;
+				@content@)
+					IFS=
+					cat "$f" | while read -r temp; do
+						case $temp in
+							@gallery@)  load_plugin gallery && gallery "$f" ;;
+							*)          printf '%s\n' "$temp" ;;
+						esac
+					done
+					unset IFS
+					;;
 				*)          printf '%s\n' "$temp" ;;
 			esac
-		done > "$f.html.tmp"
+		done > "$TMPFILE"
+		unset IFS
 		# Atomically move the new file in place, so
 		# no one sees an incomplete file.
-		mv -f "$f.html.tmp" "$f.html"
+		if [ -n "$PERMS_DEST" ]; then
+			chmod "$PERMS_DEST" "$TMPFILE"
+		fi
+		mv -f "$TMPFILE" "$f.html"
 	done
 }
 
@@ -93,6 +118,7 @@ if [ -n "$1" ]; then
 fi
 
 # Targets
+# FIXME: other than 'templates' not working currently
 for target in "$@" $default; do 
 	echo "Building target: $target"
 	case "$target" in
