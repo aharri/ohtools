@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: tempy,v 1.4 2007/11/10 04:32:04 iku Exp $
+# $Id: tempy,v 1.5 2007/11/10 16:54:50 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -26,10 +26,10 @@ default="templates"
 # it will override settings defined in the file header
 # section (the default parameter).
 
-if [ -f ".tempy" ]; then
-	. ./.tempy
+if [ -f ".tempy/conf" ]; then
+	. ./.tempy/conf
 else
-	echo "Could not read config file .tempy"
+	echo "Could not read config file .tempy/conf"
 	exit 1
 fi
 
@@ -52,7 +52,8 @@ templates()
 {
 #	XXX
 #	local f list temp update_all
-#	local NAME DESC
+#	local f NAME DESC
+	local subdir
 
 	TMPFILE_all=$(mktemp) || exit 1
 	TMPFILE_old=$(mktemp) || exit 1
@@ -60,6 +61,16 @@ templates()
 
 	IFS='	'
 	printf "$TPLS" | while read -r f NAME DESC; do
+		# XXX: currently supports only one sub level
+		case $f in
+#			index)    THIS=./ ;;
+			*/)       subdir=${f}   ; continue ;;
+			..)       subdir=''     ; continue ;;
+#			*)        file=$1 ;;
+		esac
+		f=${subdir}${f}
+#		echo "f=$f subdir=$subdir whole file=$subdir$f"
+#		continue
 		if [ -n "$PERMS_SOURCE" ]; then
 			chmod "$PERMS_SOURCE" "$f"
 		fi
