@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: tempy_gallery.sh,v 1.1 2007/11/09 20:19:17 iku Exp $
+# $Id: tempy_gallery.sh,v 1.2 2007/11/10 04:29:30 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -21,8 +21,7 @@ gallery()
 {
 	TMP=`mktemp` || exit 1
 
-	cat ${HEADER} ${GALLERY_FILE} > ${GALLERY_HTML}
-	echo '<div id="thumbnails">' >> ${GALLERY_HTML}
+	echo '<div id="thumbnails">'
 
 	IFS='
 '
@@ -31,13 +30,13 @@ gallery()
 	local files=$(find $dirs -mindepth 1 -maxdepth 2 -iname '*.jpg' -or -iname '*.png' -or -iname '*.gif' | sort)
 	local files2=$(find "$GALLERY_ORIG" -mindepth 1 -maxdepth 1 -iname '*.jpg' -or -iname '*.png' -or -iname '*.gif' | sort)
 	for i in $files2 $files; do
-		echo $(dirname "$i" | sed -e "s,^${GALLERY_ORIG}/,,")
+		#echo $(dirname "$i" | sed -e "s,^${GALLERY_ORIG}/,,")
 		local newcat=$(dirname "$i" | sed -e "s,^${GALLERY_ORIG}/,,")
 		f="${GALLERY_THUMB}/"$(basename "$i")
 		inode=$(ls -i "$i" | awk '{ print $1 }')
 		line=$(grep "^${inode}[[:space:]]" ${GALLERY_DESC})
 		if [ "$?" -ne 0 ]; then
-			echo "updating ${GALLERY_DESC}"
+			#echo "updating ${GALLERY_DESC}"
 			echo "$inode \"&nbsp;\" $f" >> $TMP
 			desc=''
 		else
@@ -45,17 +44,16 @@ gallery()
 			echo "$line" >> $TMP
 		fi
 		if [ "$f" -ot "$i" ]; then
-			echo "$i is out of date"
+			#echo "$i is out of date"
 			convert "$i" -resize ${GALLERY_DIMS} "$f"
 		fi
 		if [ "$oldcat" != "$newcat" ]; then
 			oldcat=$newcat
-			echo "<h2 style=\"clear: both;\">$newcat</h2>" >> ${GALLERY_HTML}
+			echo "<h2 style=\"clear: both;\">$newcat</h2>"
 		fi
-		echo "<div><a href=\"$i\"><img src=\"$f\" alt=\"$desc\" /></a><p>$desc</p></div>" >> ${GALLERY_HTML}
+		echo "<div><a href=\"$i\"><img src=\"$f\" alt=\"$desc\" /></a><p>$desc</p></div>"
 	done
 	unset IFS
-	echo "</div>" >> ${GALLERY_HTML}
-	cat ${FOOTER} >> ${GALLERY_HTML}
+	echo "</div>"
 	cp -f $TMP ${GALLERY_DESC} && rm -f $TMP
 }
