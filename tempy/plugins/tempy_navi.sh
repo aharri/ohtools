@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: tempy_navi.sh,v 1.1 2007/11/09 20:19:17 iku Exp $
+# $Id: tempy_navi.sh,v 1.2 2007/11/10 04:25:53 iku Exp $
 #
 # Copyright (c) 2007 Lasse Collin <larhzu@tukaani.org>
 #
@@ -50,16 +50,16 @@ navi()
 	
 	local URL NAME DESC
 	IFS='	'
-	printf '\t\t<ul id="navi">\n' "$NAME"
-	cat _topnavi | while read -r URL NAME DESC ; do
+	printf '<ul id="navi">\n'
+	printf "$TPLS" | while read -r URL NAME DESC; do
 		if [ "$DIR/" = "$URL" ]; then
 			printf '\t<li>%s</li>\n' "$NAME"
 			subnavi "$1" "$DIR/_subnavi"
 		else
 			printf '\t<li><a href="%s" title="%s">%s</a></li>\n' \
-					"$URL" "$DESC" "$NAME"
+					"${URL}.html" "$DESC" "$NAME"
 		fi
 	done
-	printf '\t\t</ul>\n' "$NAME"
+	printf '</ul>\n'
 	unset IFS
 }
