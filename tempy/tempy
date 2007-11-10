@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: tempy,v 1.5 2007/11/10 16:54:50 iku Exp $
+# $Id: tempy,v 1.6 2007/11/10 23:22:58 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -40,10 +40,10 @@ load_plugin()
 	if [ "$?" -eq 0 ]; then
 		return 0
 	fi
-	if [ ! -f "${INST_PREFIX}/libexec/tempy_${1}.sh" ]; then
+	if [ ! -f "${INST_PREFIX}/share/tempy/tempy_${1}.sh" ]; then
 		return 1
 	fi
-	. "${INST_PREFIX}/libexec/tempy_${1}.sh"
+	. "${INST_PREFIX}/share/tempy/tempy_${1}.sh"
 	PLUGINS_LOADED="$PLUGINS_LOADED $1"
 	return 0
 }

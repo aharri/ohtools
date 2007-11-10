@@ -1,12 +1,12 @@
 #!/bin/sh
 #
-# $Id: attach,v 1.8 2007/11/09 19:48:20 iku Exp $
+# $Id: attach,v 1.9 2007/11/10 23:22:58 iku Exp $
 #
 
 BASE=$(cd -- "$(dirname -- "$0")"; pwd)
-OHTOOLS_INST_PREFIX=/usr/local
+INST_PREFIX=/usr/local
 
-if [ -f "${BASE}/attach.conf" ] && [ -f "${OHTOOLS_INST_PREFIX}/libexec/hotplug_attach.sh" ]; then
+if [ -f "${BASE}/attach.conf" ] && [ -f "${INST_PREFIX}/share/hotplug/attach.sh" ]; then
 	. "${BASE}/attach.conf"
-	. "${OHTOOLS_INST_PREFIX}/libexec/hotplug_attach.sh"
+	. "${INST_PREFIX}/share/hotplug/attach.sh"
 fi

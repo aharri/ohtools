@@ -23,9 +23,10 @@ install: generic_install_routine ${PROJS}
 baseup:
 	@echo "Installing project specific files for $@"
 	${BSD_INSTALL_SCRIPT} $@/$@ ${PREFIX}/sbin/
-	${BSD_INSTALL_SCRIPT} $@/functions.sh ${PREFIX}/libexec/baseup_functions.sh
+	${BSD_INSTALL_SCRIPT_DIR} ${PREFIX}/share/baseup
+	${BSD_INSTALL_SCRIPT} $@/functions.sh ${PREFIX}/share/baseup/
 	perl -pi -e "s,^(CONFIG=).*,\1${SYSCONFDIR}/baseup.conf," ${PREFIX}/sbin/$@
-	perl -pi -e "s,^(FUNCS=).*,\1${LOCALBASE}/libexec/baseup_functions.sh," ${PREFIX}/sbin/$@
+	perl -pi -e "s,^(FUNCS=).*,\1${LOCALBASE}/share/baseup/functions.sh," ${PREFIX}/sbin/$@
 	perl -pi -e "s,^(TEMPS=).*,\1/var/tmp/$@/," ${PREFIX}/sbin/$@
 
 chroot_objects:
@@ -34,7 +35,8 @@ chroot_objects:
 
 tempy:
 	@echo "Installing project specific files for $@"
-	${BSD_INSTALL_SCRIPT} $@/plugins/tempy_*.sh ${PREFIX}/libexec/
+	${BSD_INSTALL_SCRIPT_DIR} ${PREFIX}/share/tempy
+	${BSD_INSTALL_SCRIPT} $@/plugins/tempy_*.sh ${PREFIX}/share/tempy/
 	${BSD_INSTALL_SCRIPT} $@/$@ ${PREFIX}/bin/
 
 check_errata:
@@ -43,7 +45,8 @@ check_errata:
 
 hotplug:
 	@echo "Installing project specific files for $@"
-	${BSD_INSTALL_SCRIPT} $@/hotplug_attach.sh ${PREFIX}/libexec/
+	${BSD_INSTALL_SCRIPT_DIR} ${PREFIX}/share/hotplug
+	${BSD_INSTALL_SCRIPT} $@/hotplug_attach.sh ${PREFIX}/share/hotplug/attach.sh
 	${BSD_INSTALL_DATA_DIR} ${PREFIX}/share/examples/hotplug
 	${BSD_INSTALL_SCRIPT} $@/attach ${PREFIX}/share/examples/hotplug/
 	${BSD_INSTALL_SCRIPT} $@/attach.conf ${PREFIX}/share/examples/hotplug/
