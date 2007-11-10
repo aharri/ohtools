@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: tempy_navi.sh,v 1.3 2007/11/10 16:54:50 iku Exp $
+# $Id: tempy_navi.sh,v 1.4 2007/11/10 23:11:47 iku Exp $
 #
 # Original author:
 # Copyright (c) 2007 Lasse Collin <larhzu@tukaani.org>
@@ -24,15 +24,10 @@
 subnavi()
 {
 	local subdir; subdir=''
-#	case $1 in
-#		index)    THIS=./ ;;
-#		*/index)  THIS=${1%/index}/ ;;
-#		*)        THIS=$1 ;;
-#	esac
 
 	local URL NAME DESC
 	# FIXME need "level" number for id=
-	printf '\t\t<ul id="subnavi">\n'
+	printf '<ul id="subnavi">\n'
 	IFS='	'
 	printf "$TPLS" | while read -r URL NAME DESC ; do
 		# XXX: currently supports only one sub level
@@ -43,18 +38,11 @@ subnavi()
 
 		# Found the right subdir.
 		if [ "$subdir" = "$2" ]; then
-#			printf '\t\t<li>%s</li>\n' "$NAME"
 			printf '\t<li><a href="%s" title="%s">%s</a></li>\n' \
 				"${subdir}${URL}.html" "$DESC" "$NAME"
 		fi
-#		if [ "${URL%.html}" = "$THIS" ]; then
-#			printf '\t\t<li>%s</li>\n' "$NAME"
-#		else
-#			printf '\t\t<li><a href="%s" title="%s">%s</a></li>\n' \
-#					"$URL" "$DESC" "$NAME"
-#		fi
 	done
-	printf '\t\t</ul>\n'
+	printf '</ul>\n'
 }
 
 navi()
@@ -63,10 +51,6 @@ navi()
 	local TMPFILE
 	local URL NAME DESC
 
-#	case $1 in
-#		*/*)	DIR=${1%/*} ;;
-#		*)      DIR=. ;;
-#	esac
 	DIR=$(dirname "$1")/
 
 	TMPFILE=$(mktemp) || exit 1
@@ -79,7 +63,7 @@ navi()
 			*/)
 				subdir=$URL
 				if [ "$DIR" = "$subdir" ]; then
-					printf '\t<li>%s</li>\n' "$DESC"
+					printf '\t<li>%s</li>\n' "$NAME"
 					if [ "$NAVI_STYLE" = "vert" ]; then
 						printf '\t<li>\n'
 						subnavi "$1" "$subdir"
@@ -98,27 +82,15 @@ navi()
 		if [ -n "$subdir" ]; then
 			continue
 		fi
-#		else
 		printf '\t<li><a href="%s" title="%s">%s</a></li>\n' \
 			"${subdir}${URL}.html" "$DESC" "$NAME"
-#		fi
-#		if [ "$DIR/" = "$URL" ]; then
-#			printf '\t<li>%s</li>\n' "$NAME"
-#			subnavi "$1" "$DIR/_subnavi"
-#		else
-#			printf '\t<li><a href="%s" title="%s">%s</a></li>\n' \
-#					"${URL}.html" "$DESC" "$NAME"
-#		fi
 	done
 	printf '</ul>\n'
 	unset IFS
 
 	subdir=$(cat "$TMPFILE")
 	if [ -n "$subdir" ] && [ "$NAVI_STYLE" = "horiz" ]; then
-#		printf '<ul>\n\t<li>\n'
-#		echo "$1 $subdir"
 		subnavi "$1" "$subdir"
-#		printf '\t</li>\n</ul>'
 	fi
 	rm -f "$TMPFILE"
 
