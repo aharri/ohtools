@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: tempy_gallery.sh,v 1.2 2007/11/10 04:29:30 iku Exp $
+# $Id: tempy_gallery.sh,v 1.3 2007/11/11 12:20:32 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -17,6 +17,9 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 
+# XXX: Some kind of capability of standalone run is needed.
+# Now this activates only when the gallery page HTML part
+# has been changed.
 gallery()
 {
 	TMP=`mktemp` || exit 1
