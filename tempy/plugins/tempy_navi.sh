@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: tempy_navi.sh,v 1.4 2007/11/10 23:11:47 iku Exp $
+# $Id: tempy_navi.sh,v 1.5 2007/11/11 12:19:01 iku Exp $
 #
 # Original author:
 # Copyright (c) 2007 Lasse Collin <larhzu@tukaani.org>
@@ -63,7 +63,7 @@ navi()
 			*/)
 				subdir=$URL
 				if [ "$DIR" = "$subdir" ]; then
-					printf '\t<li>%s</li>\n' "$NAME"
+					printf '\t<li><span>%s</span></li>\n' "$NAME"
 					if [ "$NAVI_STYLE" = "vert" ]; then
 						printf '\t<li>\n'
 						subnavi "$1" "$subdir"
