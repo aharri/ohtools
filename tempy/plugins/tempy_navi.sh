@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: tempy_navi.sh,v 1.6 2007/11/24 17:51:29 iku Exp $
+# $Id: tempy_navi.sh,v 1.7 2007/11/24 18:06:04 iku Exp $
 #
 # Original author:
 # Copyright (c) 2007 Lasse Collin <larhzu@tukaani.org>
@@ -21,16 +21,21 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 
+# XXX: currently supports only one sub level
+
 subnavi()
 {
+	local sublevel
 	local subdir; subdir=''
-
 	local URL NAME DESC
-	# FIXME need "level" number for id=
-	printf '<ul id="subnavi">\n'
+
+	if [ -n "$3" ] && [ "$3" -gt 1 ]; then
+		sublevel=$3
+	fi
+
+	printf '<ul id="subnavi%s">\n' "$sublevel"
 	IFS='	'
 	printf '%s' "$TPLS" | while read -r URL NAME DESC ; do
-		# XXX: currently supports only one sub level
 		case $URL in
 			*/)       subdir=$URL   ; continue ;;
 			..)       subdir=''     ; continue ;;
@@ -50,6 +55,7 @@ navi()
 	local subdir DIR
 	local TMPFILE
 	local URL NAME DESC
+	local sublevel; sublevel=-1
 
 	DIR=$(dirname "$1")/
 
@@ -58,15 +64,15 @@ navi()
 	IFS='	'
 	printf '<ul id="navi">\n'
 	printf '%s' "$TPLS" | while read -r URL NAME DESC; do
-		# XXX: currently supports only one sub level
 		case $URL in
 			*/)
+				sublevel=$((sublevel + 1))
 				subdir=$URL
 				if [ "$DIR" = "$subdir" ]; then
 					printf '\t<li><span>%s</span></li>\n' "$NAME"
 					if [ "$NAVI_STYLE" = "vert" ]; then
 						printf '\t<li>\n'
-						subnavi "$1" "$subdir"
+						subnavi "$1" "$subdir" "$sublevel"
 						printf '\t</li>\n'
 					else
 						printf '%s\n' "$subdir" >> "$TMPFILE"
@@ -77,7 +83,11 @@ navi()
 				fi
 				continue
 			;;
-			..)       subdir=''     ; continue ;;
+			..)
+				sublevel=$((sublevel - 1))
+				subdir=''
+				continue
+			;;
 		esac
 		if [ -n "$subdir" ]; then
 			continue
@@ -90,7 +100,7 @@ navi()
 
 	subdir=$(cat "$TMPFILE")
 	if [ -n "$subdir" ] && [ "$NAVI_STYLE" = "horiz" ]; then
-		subnavi "$1" "$subdir"
+		subnavi "$1" "$subdir" "1"
 	fi
 	rm -f "$TMPFILE"
 
