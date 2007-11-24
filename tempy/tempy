@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: tempy,v 1.7 2007/11/24 13:29:06 iku Exp $
+# $Id: tempy,v 1.8 2007/11/24 17:51:29 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -60,7 +60,7 @@ templates()
 	TMPFILE_var1=$(mktemp) || exit 1
 
 	IFS='	'
-	printf "$TPLS" | while read -r f NAME DESC; do
+	printf '%s' "$TPLS" | while read -r f NAME DESC; do
 		# XXX: currently supports only one sub level
 		case $f in
 #			index)    THIS=./ ;;

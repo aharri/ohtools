@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: tempy_navi.sh,v 1.5 2007/11/11 12:19:01 iku Exp $
+# $Id: tempy_navi.sh,v 1.6 2007/11/24 17:51:29 iku Exp $
 #
 # Original author:
 # Copyright (c) 2007 Lasse Collin <larhzu@tukaani.org>
@@ -29,7 +29,7 @@ subnavi()
 	# FIXME need "level" number for id=
 	printf '<ul id="subnavi">\n'
 	IFS='	'
-	printf "$TPLS" | while read -r URL NAME DESC ; do
+	printf '%s' "$TPLS" | while read -r URL NAME DESC ; do
 		# XXX: currently supports only one sub level
 		case $URL in
 			*/)       subdir=$URL   ; continue ;;
@@ -57,7 +57,7 @@ navi()
 
 	IFS='	'
 	printf '<ul id="navi">\n'
-	printf "$TPLS" | while read -r URL NAME DESC; do
+	printf '%s' "$TPLS" | while read -r URL NAME DESC; do
 		# XXX: currently supports only one sub level
 		case $URL in
 			*/)
