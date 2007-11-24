@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: tempy,v 1.6 2007/11/10 23:22:58 iku Exp $
+# $Id: tempy,v 1.7 2007/11/24 13:29:06 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -79,7 +79,7 @@ templates()
 			if [ "${f}.html" -ot "$f" ]; then
 				printf '%s\n' "$f" >> "$TMPFILE_old"
 			fi
-			if [ "$MASTER" -nt "$f.html" ] ; then
+			if [ "$MASTER" -nt "${f}.html" ] || [ ".tempy/conf" -nt "${f}.html" ]; then
 				printf "1" > "$TMPFILE_var1"
 				update_all=1
 			fi
