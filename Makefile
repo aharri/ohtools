@@ -27,7 +27,7 @@ baseup:
 	${BSD_INSTALL_SCRIPT} $@/functions.sh ${PREFIX}/share/baseup/
 	perl -pi -e "s,^(CONFIG=).*,\1${SYSCONFDIR}/baseup.conf," ${PREFIX}/sbin/$@
 	perl -pi -e "s,^(FUNCS=).*,\1${LOCALBASE}/share/baseup/functions.sh," ${PREFIX}/sbin/$@
-	perl -pi -e "s,^(TEMPS=).*,\1/var/tmp/$@/," ${PREFIX}/sbin/$@
+	perl -pi -e "s,^(TEMPS=).*,\1/var/tmp/$@," ${PREFIX}/sbin/$@
 
 chroot_objects:
 	@echo "Installing project specific files for $@"
