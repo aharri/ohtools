@@ -1,0 +1,144 @@
+#!/bin/sh
+#
+# $Id: confmerger,v 1.1 2008/03/13 16:48:06 iku Exp $
+#
+# Copyright (c) 2008 Antti Harri <iku@openbsd.fi>
+#
+# Permission to use, copy, modify, and distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+
+LOCALBASE=/usr/local
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+TTY=$(tty)
+
+# From: mergeslacker.sh,v 1.8 2007/10/01 20:58:04 iku Exp
+merge_files()
+{
+	local source="${LOCALBASE}/$1"
+	local dest=$2
+	local basename=$(basename "$origfile")
+	local TMPFILE=
+
+	# Original doesn't exist.
+	if [ ! -e "$dest" ]; then
+		echo "No such file $dest, packaging error or deleted on purpose? Skipping."
+		return
+	fi
+
+	# Is it file or directory?
+	if [ -d "$dest" ]; then
+		#echo "Filetype directory. Skipping."
+		return
+	fi
+
+	# Original exists, diff both.
+	cmp=$(cmp -s "$source" "$dest")
+	cmp=$?
+
+	# No difference -> delete .new .
+	if [ "$cmp" -eq 0 ]; then
+		echo "Files identical. Skipping"
+		return
+
+	# User has modified files or the newly shipped file
+	# differs otherwise with the old.
+	else
+		while true; do
+			if [ -n "$TMPFILE" ]; then
+				echo "Diff'ed file exists ($dest)"
+				echo ""
+				echo "[D]elete the temporary file and go back to the previous menu"
+				echo "[I]nstall the newly created file"
+				echo "[v]iew the contents"
+				read ans < "$TTY"
+				case "$ans" in
+					"D")
+						echo "deleting temporary file"
+						echo not executing: rm -f "$TMPFILE"
+						TMPFILE=
+						continue
+					;;
+					"I")
+						echo "installing new file"
+						echo not executing: cp "$TMPFILE" "$dest"
+						echo not executing: rm -f "$TMPFILE"
+						TMPFILE=
+						break
+					;;
+					"v")
+						more "$TMPFILE"
+						continue
+					;;
+				esac
+			fi
+			echo "File differs: $dest"
+			echo ""
+			echo "[d]iff files"
+			echo "[i]nteractively merge files together"
+			echo "[I]nstall sample"
+			echo -n "[l]eave as is for further use (default) "
+			read ans < "$TTY"
+			case "$ans" in 
+				"d")
+					diff -a -u "$dest" "$source" | more
+					continue
+				;;
+				"i")
+					TMPFILE=$(mktemp -q /tmp/mergeslacker.XXXXXXXXXX)
+					if [ "$?" -ne 0 ]; then
+						echo "error creating temporary file, trying to continue"
+						continue
+					fi
+					sdiff -o "$TMPFILE" "$dest" "$source" < "$TTY"
+					continue
+
+				;;
+				"I")
+					echo "copying $source to $dest"
+					echo not executing: cp -p "$source" "$dest"
+					break
+				;;
+				*)
+					break
+				;;
+			esac
+		done
+	fi
+}
+
+# Fetch OpenBSD package file information for the
+# adapted mergeslacker function (above)
+pkg_info | while read -r PKGNAME PKGDESC; do
+
+	# Skip files without samples
+	grep -qe '^@sample ' /var/db/pkg/"${PKGNAME}"/+CONTENTS || continue
+
+	cat /var/db/pkg/"${PKGNAME}"/+CONTENTS | while read -r ELEMENT1 ELEMENT2; do
+
+		case $ELEMENT1 in
+			# It starts with command, is it sample?
+			@sample)
+				#SAMPLE=$ELEMENT2
+				#echo "$PKGNAME:$FILENAME:$SAMPLE"
+				echo "merging $ELEMENT2"
+				merge_files "$FILENAME" "$ELEMENT2"
+			;;
+
+			# Discard all other commands
+			@*) ;;
+
+			# Anything else must be filename
+			*) FILENAME=$ELEMENT1 ;;
+		esac
+	done
+done
