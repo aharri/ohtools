@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: confmerger,v 1.1 2008/03/13 16:48:06 iku Exp $
+# $Id: confmerger,v 1.2 2008/03/14 11:05:00 iku Exp $
 #
 # Copyright (c) 2008 Antti Harri <iku@openbsd.fi>
 #
@@ -29,17 +29,21 @@ merge_files()
 	local basename=$(basename "$origfile")
 	local TMPFILE=
 
-	# Original doesn't exist.
-	if [ ! -e "$dest" ]; then
-		echo "No such file $dest, packaging error or deleted on purpose? Skipping."
-		return
-	fi
-
-	# Is it file or directory?
+	# Is it file or directory? We're not interested in those
 	if [ -d "$dest" ]; then
 		#echo "Filetype directory. Skipping."
 		return
 	fi
+
+	# Original doesn't exist.
+	if [ ! -e "$dest" ]; then
+		printf '\n%s\n%s\n' \
+			"merging $dest" \
+			"No such file $dest, packaging error or deleted on purpose? Skipping."
+		return
+	fi
+
+	printf '\n%s\n' "$dest"
 
 	# Original exists, diff both.
 	cmp=$(cmp -s "$source" "$dest")
@@ -64,14 +68,14 @@ merge_files()
 				case "$ans" in
 					"D")
 						echo "deleting temporary file"
-						echo not executing: rm -f "$TMPFILE"
+						rm -f "$TMPFILE"
 						TMPFILE=
 						continue
 					;;
 					"I")
 						echo "installing new file"
-						echo not executing: cp "$TMPFILE" "$dest"
-						echo not executing: rm -f "$TMPFILE"
+						cp "$TMPFILE" "$dest"
+						rm -f "$TMPFILE"
 						TMPFILE=
 						break
 					;;
@@ -105,7 +109,7 @@ merge_files()
 				;;
 				"I")
 					echo "copying $source to $dest"
-					echo not executing: cp -p "$source" "$dest"
+					cp -p "$source" "$dest"
 					break
 				;;
 				*)
@@ -130,7 +134,6 @@ pkg_info | while read -r PKGNAME PKGDESC; do
 			@sample)
 				#SAMPLE=$ELEMENT2
 				#echo "$PKGNAME:$FILENAME:$SAMPLE"
-				echo "merging $ELEMENT2"
 				merge_files "$FILENAME" "$ELEMENT2"
 			;;
 
