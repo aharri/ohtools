@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: check_errata,v 1.1 2007/11/09 18:28:54 iku Exp $
+# $Id: check_errata,v 1.2 2008/03/23 15:59:52 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -28,7 +28,10 @@ email=root
 diff_opts="-u"
 
 # where to store "cache"
-file=$HOME/.openbsd_errata
+cache_dir=$HOME/.cache/check_errata
+
+# files, default: 'errata' and 'current'
+files="errata$(uname -r | sed 's/\.//').html faq/current.html"
 ### END OF CONFIGURATION
 
 # override email if specified on the command line
@@ -36,7 +39,7 @@ if [ -n "$1" ]; then
 	email=$1
 fi
 
-# check for links
+# check for links, it makes more readable output
 which links 1>/dev/null
 if [ "$?" -eq 0 ]; then
 	browser=links
@@ -44,31 +47,37 @@ else
 	browser=lynx
 fi
 
-# create the cache directory/file if they doesn't exist
-dir=$(cd -- "$(dirname -- "$0")"; pwd)
-if [ ! -d "$dir" ]; then mkdir -p "$dir"; fi
-if [ ! -e "$file" ]; then touch "$file"; fi
+# create the cache directory if it doesn't exist
+if [ ! -d "$cache_dir" ]; then mkdir -p "$cache_dir"; fi
 
-# create temporary file
+# create temporary file and hook it to the exit-event
 TMPFILE=$(mktemp) || exit 1
+trap "rm -f \"$TMPFILE\"" EXIT
 
 # fetch new results
-rev=$(uname -r | sed 's/\.//')
-for host in $servers; do
-	data=$("$browser" -dump "http://${host}/errata${rev}.html" 2>/dev/null)
-	if [ "$?" -eq 0 ]; then break; fi
+for file in $files; do
+	cache_file=$(basename "$file")
+
+	# create initial file
+	if [ ! -e "${cache_dir}/${cache_file}" ]; then touch "${cache_dir}/${cache_file}"; fi
+
+	# go through servers and fetch the files
+	for host in $servers; do
+		data=$("$browser" -dump "http://${host}/${file}" 2>/dev/null)
+		if [ "$?" -eq 0 ]; then break; fi
+	done
+
+	if [ -z "$data" ]; then
+		break
+	fi
+	printf "%s\n" "$data" > "$TMPFILE"
+
+	# show the results
+	res=$(diff $diff_opts "${cache_dir}/${cache_file}" "$TMPFILE")
+	if [ -n "$res" ]; then
+		echo "$res" | mail -s "OpenBSD file differs: $file" "$email"
+	fi
+
+	# copy the file
+	cp -f "$TMPFILE" "${cache_dir}/${cache_file}"
 done
-if [ -z "$data" ]; then
-	exit 1
-fi
-print "$data" > "$TMPFILE"
-
-# show the results
-res=$(diff $diff_opts "$file" "$TMPFILE")
-if [ -n "$res" ]; then
-	echo "$res" | mail -s "OpenBSD Errata" "$email"
-fi
-
-# copy the file
-cp -f "$TMPFILE" "$file"
-rm -f "$TMPFILE"
