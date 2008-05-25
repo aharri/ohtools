@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: baseup,v 1.24 2008/03/29 13:00:53 iku Exp $
+# $Id: baseup,v 1.25 2008/05/25 13:49:50 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -120,29 +120,35 @@ case "$_VAL" in
 			exit 1
 		fi
 
+		local sysmerge_cmd=
 		for pkg in "${TEMPS}/"*.tgz; do
 			echo "$pkg" | egrep -q "/etc..\.tgz$"
 			if [ "$?" -eq 0 ]; then
-				echo "Skipping ${pkg}: merge by hand!"
+				sysmerge_cmd="$sysmerge_cmd -s $pkg"
+				echo "Skipping ${pkg}: merge with sysmerge!"
+				continue
+			fi
+			echo "$pkg" | egrep -q "/xetc..\.tgz$"
+			if [ "$?" -eq 0 ]; then
+				sysmerge_cmd="$sysmerge_cmd -x $pkg"
+				echo "Skipping ${pkg}: merge with sysmerge!"
 				continue
 			fi
 			echo "Installing $pkg"
 			(cd / && tar zxfp "$pkg") || break
 		done
 
-		echo "Creating devices."
-		# FIXME error checking
-		(cd /dev && ./MAKEDEV all)
-
-		echo "Base installed, you might want to reboot now."
-		echo "Also remember to merge /etc by hand!"
-
-		echo -n "Run mtree? (recommended) (Y/n) "
-		read ans
-		if [ "$ans" != "n" ]; then
-			mtree -def /etc/mtree/4.4BSD.dist -p / -u
-		fi
+		echo "Base installed."
 
 		set_config state install_kernel
+
+		if [ -n "$sysmerge_cmd" ]; then
+			echo -n "Run sysmerge? (recommended) (Y/n) "
+			read ans
+			if [ "$ans" != "n" ]; then
+				sysmerge $sysmerge_cmd
+			fi
+		fi
+
 	;;
 esac
