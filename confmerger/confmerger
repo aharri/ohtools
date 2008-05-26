@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: confmerger,v 1.2 2008/03/14 11:05:00 iku Exp $
+# $Id: confmerger,v 1.3 2008/05/26 15:25:23 iku Exp $
 #
 # Copyright (c) 2008 Antti Harri <iku@openbsd.fi>
 #
@@ -85,6 +85,7 @@ merge_files()
 					;;
 				esac
 			fi
+			diff -au "$dest" "$source" | more
 			echo "File differs: $dest"
 			echo ""
 			echo "[d]iff files"
@@ -94,7 +95,7 @@ merge_files()
 			read ans < "$TTY"
 			case "$ans" in 
 				"d")
-					diff -a -u "$dest" "$source" | more
+					diff -au "$dest" "$source" | more
 					continue
 				;;
 				"i")
