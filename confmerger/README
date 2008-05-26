@@ -1,16 +1,14 @@
-Very small but robust configuration merging tool
-for Slackware Linux and distributions with similar
-package management such as Tukaani Linux.
-Distros using Pacman (such as Arch Linux) for
-package management should work almost out of the box.
+Modified version of Mergeslacker.
 
 Required tools only include general system tools
 such as cp, rm, diff and so on. Also sdiff is 
-required for interactive merging.
+required for interactive merging. These should
+all be in OpenBSD base.
 
-Run this after you have upgraded packages with pkgtool.
-The newly installed configuration files (.new suffix)
-will be compared and merged with existing files.
+Run this after you have upgraded packages with pkg_add.
+The newly installed configuration sample files (@sample markers
+in PLIST) will be compared to your current configuration
+and interactively merged.
 
 -- 
-$Id: README,v 1.1 2008/03/13 16:48:06 iku Exp $
+$Id: README,v 1.2 2008/05/26 15:30:03 iku Exp $
