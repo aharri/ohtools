@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: dyndns,v 1.11 2008/05/27 15:51:46 iku Exp $
+# $Id: dyndns,v 1.12 2008/05/27 16:17:35 iku Exp $
 #
 # Copyright (c) 2008 Antti Harri <iku@openbsd.fi>
 #
@@ -8,17 +8,13 @@
 # Common.
 PATH=/bin:/sbin:/usr/bin:/usr/sbin
 SYSCONFDIR=/home/iku/ohtools/dyndns/etc
-#DEBUG=1
 
-#Server
-ZONE=/var/named/users/iku/auth/openbsd.fi
-HOSTS_DIR=/chroots/home/dyndns
-CACHE=/var/tmp/dyndns
+if [ ! -f "${SYSCONFDIR}/dyndns.conf" ]; then
+	echo "Configuration does not exist"
+	exit 1
+fi
 
-# Client
-KEY=${SYSCONFDIR}/dyndns.key
-CONF=${SYSCONFDIR}/dyndns.conf
-USER=dyndns
+. "${SYSCONFDIR}/dyndns.conf"
 
 debuglog()
 {
@@ -26,6 +22,7 @@ debuglog()
 		echo "$1"
 	fi
 }
+
 # No parameters.
 if [ -z "$1" ]; then
 	exit 1
@@ -76,7 +73,6 @@ elif [ "$1" = "-s" ]; then
 else
 	IP=$(ifconfig "$1" | fgrep 'inet ' | awk '{print $2 }') || exit 1
 	MYHOST=$(hostname -s)
-	DEST=$(cat $CONF)
 
 	ssh \
 		-i "$KEY" \
