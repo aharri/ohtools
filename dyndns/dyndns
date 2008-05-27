@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: dyndns,v 1.8 2008/05/27 10:24:36 iku Exp $
+# $Id: dyndns,v 1.9 2008/05/27 10:27:03 iku Exp $
 #
 # Copyright (c) 2008 Antti Harri <iku@openbsd.fi>
 #
@@ -40,11 +40,11 @@ elif [ "$1" = "-s" ]; then
 	while true; do
 		cp "$ZONE" "$TMP" || exit 1
 		for h in *.host; do
-			if [ ! -f "$CACHE/$h" ]; then
-				cp "$h" "$CACHE/"
-			fi
 			cmp -s "$h" "$CACHE/$h"
-			if [ "$?" = 1 ]; then
+			if [ "$?" != 0 ]; then
+				if [ ! -f "$CACHE/$h" ]; then
+					cp "$h" "$CACHE/"
+				fi
 				MODIFIED=1
 
 				IP=$(cat "$h")
