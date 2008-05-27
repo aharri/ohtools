@@ -8,6 +8,8 @@ Install the sample configuration under /etc
 and change it's contents to reflect your dyndns
 host.
 
+Install the private key into /etc/dyndns.key
+
 SERVER:
 
 Here's example configurations for server side:
@@ -32,4 +34,4 @@ Copy dyndns user into home/dyndns according to passwd
 file's homedirectory.
 
 --
-$Id: README,v 1.2 2008/05/27 16:28:26 iku Exp $
+$Id: README,v 1.3 2008/05/27 16:30:21 iku Exp $
