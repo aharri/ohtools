@@ -6,6 +6,7 @@ PROJS=\
 	tempy \
 	check_errata \
 	hotplug \
+	dyndns
 #	mbox_pruner
 
 
@@ -52,6 +53,11 @@ hotplug:
 	${BSD_INSTALL_SCRIPT} $@/attach.conf ${PREFIX}/share/examples/hotplug/
 	perl -pi -e "s,^(OHTOOLS_INST_PREFIX=).*,\1${LOCALBASE}," ${PREFIX}/share/examples/hotplug/attach
 
+dyndns:
+	@echo "Installing project specific files for $@"
+	${BSD_INSTALL_SCRIPT} $@/$@ ${PREFIX}/bin/
+	${BSD_INSTALL_DATA_DIR} ${PREFIX}/share/examples/$@
+	${BSD_INSTALL_DATA} $@/etc/$@.conf ${PREFIX}/share/examples/$@/
 
 generic_install_routine:
 .for p in ${PROJS}
