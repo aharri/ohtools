@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: dyndns,v 1.10 2008/05/27 13:45:53 iku Exp $
+# $Id: dyndns,v 1.11 2008/05/27 15:51:46 iku Exp $
 #
 # Copyright (c) 2008 Antti Harri <iku@openbsd.fi>
 #
@@ -67,7 +67,7 @@ elif [ "$1" = "-s" ]; then
 			debuglog "Copying to $ZONE"
 			cp "$TMP" "$ZONE" || exit 1
 			debuglog "Reloading named"
-			sudo rndc reload
+			sudo rndc reload > /dev/null
 		fi
 		sleep 20
 	done
