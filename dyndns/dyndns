@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: dyndns,v 1.7 2008/05/27 09:36:48 iku Exp $
+# $Id: dyndns,v 1.8 2008/05/27 10:24:36 iku Exp $
 #
 # Copyright (c) 2008 Antti Harri <iku@openbsd.fi>
 #
@@ -12,6 +12,8 @@ SYSCONFDIR=/home/iku/ohtools/dyndns/etc
 #Server
 ZONE=/var/named/users/iku/auth/openbsd.fi
 HOSTS_DIR=/chroots/home/dyndns
+CACHE=/var/tmp/dyndns
+
 # Client
 KEY=${SYSCONFDIR}/dyndns.key
 CONF=${SYSCONFDIR}/dyndns.conf
@@ -23,19 +25,41 @@ if [ -z "$1" ]; then
 
 # Server mode.
 elif [ "$1" = "-s" ]; then
+	# Init
 	cd "$HOSTS_DIR" || exit 1
+
+	# Tmp
 	TMP=$(mktemp) || exit 1
 	trap "rm -f \"$TMP\"" EXIT
-	cp "$ZONE" "$TMP"
+
+	# Cache dir
+	if [ ! -d "$CACHE" ]; then
+		mkdir "$CACHE" || exit 1
+	fi
+
 	while true; do
-		date=$(date +%Y%m%d%H%M)
-		perl -pi -e "s/[[:digit:]]+\s.*serial/$date ; serial/" "$TMP"
+		cp "$ZONE" "$TMP" || exit 1
 		for h in *.host; do
-			IP=$(cat "$h")
-			h=$(echo "$h" | cut -f 1 -d '.')
-			perl -pi -e "s/^$h\s+IN\s+A.*/$h\tIN\tA\t$IP/" "$TMP"
+			if [ ! -f "$CACHE/$h" ]; then
+				cp "$h" "$CACHE/"
+			fi
+			cmp -s "$h" "$CACHE/$h"
+			if [ "$?" = 1 ]; then
+				MODIFIED=1
+
+				IP=$(cat "$h")
+				h=$(echo "$h" | cut -f 1 -d '.')
+				perl -pi -e "s/^$h\s+IN\s+A.*/$h\tIN\tA\t$IP/" "$TMP"
+				cp "$h" "$CACHE/"
+			fi
 		done
-		cp "$TMP" "$ZONE" || exit 1
+		if [ "$MODIFIED" = 1 ]; then
+			unset MODIFIED
+			date=$(date +%Y%m%d%H%M)
+			perl -pi -e "s/[[:digit:]]+\s.*serial/$date ; serial/" "$TMP"
+			cp "$TMP" "$ZONE" || exit 1
+			sudo rndc reload
+		fi
 		sleep 20
 	done
 
