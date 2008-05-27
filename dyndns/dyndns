@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: dyndns,v 1.5 2008/05/27 09:31:34 iku Exp $
+# $Id: dyndns,v 1.6 2008/05/27 09:33:52 iku Exp $
 #
 # Copyright (c) 2008 Antti Harri <iku@openbsd.fi>
 #
@@ -25,6 +25,7 @@ if [ -z "$1" ]; then
 elif [ "$1" = "-s" ]; then
 	cd "$HOSTS_DIR" || exit 1
 	TMP=$(mktemp) || exit 1
+	trap "rm -f \"$TMP\"" EXIT
 	cp "$ZONE" "$TMP"
 	while true; do
 		date=$(date +%Y%m%d%H%M)
