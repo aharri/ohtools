@@ -1,8 +1,35 @@
+COMMON:
+
+Generate your pubkey with ssh-keygen.
+
+CLIENT:
+
 Install the sample configuration under /etc
 and change it's contents to reflect your dyndns
 host.
 
-Generate your pubkey with ssh-keygen.
+SERVER:
+
+Here's example configurations for server side:
+
+sshd_config:
+Match Group dyndns
+        AllowTcpForwarding no
+        X11Forwarding no
+        ChrootDirectory /chroots
+
+$ ls -l /chroots/
+total 6
+drwxr-xr-x    2 root     wheel         512 May 27 10:40 bin
+drwxr-xr-x    2 root     wheel         512 May 27 10:42 dev
+drwxr-xr-x    3 root     wheel         512 May 27 11:12 home
+
+mkdir these and copy sh into bin/
+
+Copy MAKEDEV into dev/ and MAKEDEV std and arandom.
+
+Copy dyndns user into home/dyndns according to passwd
+file's homedirectory.
 
 --
-$Id: README,v 1.1 2008/05/27 14:07:57 iku Exp $
+$Id: README,v 1.2 2008/05/27 16:28:26 iku Exp $
