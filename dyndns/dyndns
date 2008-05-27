@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: dyndns,v 1.3 2008/05/27 09:29:55 iku Exp $
+# $Id: dyndns,v 1.4 2008/05/27 09:31:02 iku Exp $
 #
 # Copyright (c) 2008 Antti Harri <iku@openbsd.fi>
 #
@@ -22,7 +22,7 @@ if [ -z "$1" ]; then
 	exit 1
 
 # Server mode.
-elif [ "$1" = "s" ]; then
+elif [ "$1" = "-s" ]; then
 	cd "$HOSTS_DIR" || exit 1
 	TMP=$(mktemp) || exit 1
 	cp "$ZONE" "$TMP"
