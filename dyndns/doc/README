@@ -1,0 +1,8 @@
+Install the sample configuration under /etc
+and change it's contents to reflect your dyndns
+host.
+
+Generate your pubkey with ssh-keygen.
+
+--
+$Id: README,v 1.1 2008/05/27 14:07:57 iku Exp $
