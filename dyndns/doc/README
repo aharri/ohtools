@@ -33,5 +33,8 @@ Copy MAKEDEV into dev/ and MAKEDEV std and arandom.
 Copy dyndns user into home/dyndns according to passwd
 file's homedirectory.
 
+Copy public key into your dyndns user's REAL home dir
+(/home/dyndns/.ssh/).
+
 --
-$Id: README,v 1.3 2008/05/27 16:30:21 iku Exp $
+$Id: README,v 1.4 2008/05/27 16:33:34 iku Exp $
