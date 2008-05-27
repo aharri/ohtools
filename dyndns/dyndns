@@ -1,0 +1,45 @@
+#!/bin/sh
+
+# Common.
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+SYSCONFDIR=/home/iku/ohtools/dyndns/etc
+
+#Server
+ZONE=/var/named/users/iku/auth/openbsd.fi
+HOSTS_DIR=/chroots/home/dyndns
+# Client
+KEY=${SYSCONFDIR}/dyndns.key
+CONF=${SYSCONFDIR}/dyndns.conf
+USER=dyndns
+
+# No parameters.
+if [ -z "$1" ]; then
+	exit 1
+
+# Server mode.
+elif [ "$1" = "s" ]; then
+	cd "$HOSTS_DIR"
+	while 1; do
+		date=$(date +%Y%m%d%H%M)
+		perl -pi -e "s/[[:digit:]]+\s.*serial/$date ; serial/" "$ZONE"
+		for h in *.host; do
+			IP=$(echo "$h")
+			h=$(echo "$h" | cut -f 1 -d '.')
+			perl -pi -e "s/^$h\s+IN\s+A.*/$h\tIN\tA\t/" "$ZONE"
+		done
+		sleep 20
+	done
+
+# Client mode.
+else
+	IP=$(ifconfig "$1" | fgrep 'inet ' | awk '{print $2 }') || exit 1
+	MYHOST=$(hostname -s)
+	DEST=$(cat $CONF)
+
+	ssh \
+		-i "$KEY" \
+		-o PasswordAuthentication=no \
+		-o BatchMode=yes \
+		"${USER}@${DEST}" \
+		"echo $IP > ${MYHOST}.host"
+fi
