@@ -1,13 +1,14 @@
 #!/bin/sh
 #
-# $Id: dyndns,v 1.15 2008/05/28 04:32:11 iku Exp $
+# $Id: dyndns,v 1.16 2008/05/28 04:50:43 iku Exp $
 #
 # Copyright (c) 2008 Antti Harri <iku@openbsd.fi>
 #
 
 # Common.
 PATH=/bin:/sbin:/usr/bin:/usr/sbin
-SYSCONFDIR=/home/iku/ohtools/dyndns/etc
+SYSCONFDIR=/etc
+SCRIPTDIR=$(cd -- "$(dirname -- "$0")"; pwd)
 
 debuglog()
 {
@@ -16,12 +17,15 @@ debuglog()
 	fi
 }
 
-if [ ! -f "${SYSCONFDIR}/dyndns.conf" ]; then
+if [ -f "${SYSCONFDIR}/dyndns.conf" ]; then
+	. "${SYSCONFDIR}/dyndns.conf"
+elif [ -f "${SCRIPTDIR}/etc/dyndns.conf" ]; then
+	SYSCONFDIR="${SCRIPTDIR}/etc"
+	. "${SYSCONFDIR}/dyndns.conf"
+else
 	echo "Configuration does not exist"
 	exit 1
 fi
-
-. "${SYSCONFDIR}/dyndns.conf"
 
 # No parameters.
 if [ -z "$1" ]; then
