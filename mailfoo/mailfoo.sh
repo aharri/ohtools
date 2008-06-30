@@ -1,6 +1,6 @@
 #!/bin/sh
 # 
-# $Id: mailfoo.sh,v 1.3 2007/09/04 17:04:08 iku Exp $
+# $Id: mailfoo.sh,v 1.4 2008/06/30 21:50:09 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -20,7 +20,7 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 STDIN=$(cat)
 
 # Save stdin into a file in case of a weird error happens
-TMPFILE=$(mktemp) || exit 1
+TMPFILE=$(TMPDIR=/var/tmp mktemp) || exit 1
 printf '%s\n' "$STDIN" > "$TMPFILE"
 
 check_header ()
