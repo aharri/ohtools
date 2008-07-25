@@ -1,0 +1,146 @@
+#!/bin/sh
+
+# Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
+
+# Update specs (x marks NOT done):
+# - update all chroot related files and
+#   scripts from skeleton dir
+#
+# - copy required system binaries
+#
+# - dig up user & group
+# - update fastcgi spawner script
+#
+# - dig up docroot from lighty's conf
+# - update docroot in php.ini
+# - update docroot in fastcgi spawner
+# - update # of procs in fastcgi spawner
+#
+# - dig up modules used in php.ini
+# - copy module files from apache's dir
+#
+# - update module directories from system
+#   lib directories
+
+
+# module dir, it's should be pretty static
+APACHE_MODS=/var/www/lib/php/modules
+# logs can be removed once lighttpd's team has fixed the log issue
+CHOWNS="tmp/ logs/access_log logs/error_log"
+BASE=$(cd -- "$(dirname -- "$0")"; pwd)"/.."
+
+_usage()
+{
+	echo "${BASE}/bin/vhostctl [update|add|remove]"
+}
+
+if [ "$#" -lt 1 ]; then
+	_usage
+	exit
+fi
+
+DEBUG()
+{
+	echo "DEBUG: $1"
+#	sleep 1
+}
+_update()
+{
+	echo "Processing config directory: ${BASE}/conf/"
+	for conf in ${BASE}/conf/vhost-*.conf; do
+		echo " Processing config file: $conf"
+
+		# Check for FastCGI, else continue
+		egrep -q "^[[:space:]]*fastcgi.server" "$conf" || continue
+
+		user=$(egrep "^[[:space:]]*server.username" "$conf" | cut -f 2 -d '"')
+		group=$(egrep "^[[:space:]]*server.groupname" "$conf" | cut -f 2 -d '"')
+		admin=$(egrep "^[[:space:]]*var.vhost-admin" "$conf" | cut -f 2 -d '"')
+		vhostgrp=$(egrep "^[[:space:]]*var.vhost-group" "$conf" | cut -f 2 -d '"')
+		chroot=$(egrep "^[[:space:]]*server.chroot" "$conf" | cut -f 2 -d '"')
+		docroot=$(egrep "^[[:space:]]*server.document-root" "$conf" | cut -f 2 -d '"')
+		fastcgiprocs=$(egrep "^[[:space:]]*var.fastcgi-procs" "$conf" | cut -f 2 -d '"')
+
+		# disaster preventer
+		if [ -z "$chroot" ]; then
+			DEBUG "chroot variable empty in $conf !"
+			continue
+		fi
+
+		if [ -z "$admin" ]; then
+			admin="root"
+		fi
+
+		DEBUG "installed in $chroot with docroot $docroot"
+
+		DEBUG "changing chroot's group and perm"
+		if [ -n "$vhostgrp" ]; then
+			chown "${admin}:${vhostgrp}" "$chroot"
+		else
+			chown "${admin}:${group}" "$chroot"
+		fi
+		chmod 750 "$chroot"
+
+		DEBUG "updating directory structure"
+		mtree -qef "${BASE}/skel/specs/fastcgi-vhost.spec" -p "${chroot}/" -U
+
+		DEBUG "chowning required files for httpd"
+		for f in $CHOWNS; do
+			# it isn't necessary to be chgrp'd too
+			#chown "${user}:${group}" "${chroot}/${f}"
+			chown "${user}:wheel" "${chroot}/${f}"
+		done
+
+		DEBUG "removing stuff required in chroot: usr/"
+		rm -rf "${chroot}/usr"
+
+		DEBUG "copying system binaries"
+		cp -f /bin/sh "${chroot}/bin/"
+		cp -f /usr/local/bin/php-fastcgi "${chroot}/fastcgi/"
+		
+		DEBUG "updating their dependencies"
+		# sh is statically compiled
+		${BASE}/bin/chroot_objects "$chroot" "${chroot}/fastcgi/php-fastcgi"
+
+		if [ -f "${chroot}/fastcgi/php.ini" -a -f "${chroot}/bin/spawn-php.sh" ]; then
+			DEBUG "found php.ini and spawn-php.sh, now updating it"
+			# php.ini
+			perl -pi -e "s,^doc_root[[:space:]]*=.*$,doc_root = $docroot," "${chroot}/fastcgi/php.ini"
+			# spawn-php.sh (the variable names should probably be changed)
+			perl -pi -e "s,^USERID[[:space:]]*=.*$,USERID=$user," "${chroot}/bin/spawn-php.sh"
+			perl -pi -e "s,^GROUPID[[:space:]]*=.*$,GROUPID=$group," "${chroot}/bin/spawn-php.sh"
+			perl -pi -e "s,^WEBROOT[[:space:]]*=.*$,WEBROOT=$chroot," "${chroot}/bin/spawn-php.sh"
+			perl -pi -e "s,^PHP_FCGI_CHILDREN[[:space:]]*=.*$,PHP_FCGI_CHILDREN=$fastcgiprocs," "${chroot}/bin/spawn-php.sh"
+
+			extroot=$(egrep "^[[:space:]]*extension_dir" "${chroot}/fastcgi/php.ini" | cut -f 2 -d '"')
+			modules=$(grep "^extension=" ${chroot}/fastcgi/php.ini | cut -f 2 -d '=')
+			DEBUG "now updating extensions: ${chroot}/${extroot}/"
+
+			if [ -n "$extroot" -a -n "$modules" ]; then
+				rm -f "${chroot}/${extroot}/"*
+				for module in $modules; do
+					cp -f "${APACHE_MODS}/${module}" "${chroot}/${extroot}/"
+					${BASE}/bin/chroot_objects "$chroot" "${chroot}/${extroot}/${module}"
+				done
+			fi
+		fi
+	done
+
+}
+
+_add()
+{
+	echo "not yet implemented!"
+}
+
+_remove()
+{
+	echo "not yet implemented!"
+}
+
+case "$1" in
+	"update") _update ;;
+	"add") _add ;;
+	"remove") _remove ;;
+	*) _usage ;;
+esac

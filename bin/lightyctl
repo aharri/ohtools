@@ -1,0 +1,101 @@
+#!/bin/sh
+
+# Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
+
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+BASE=$(cd -- "$(dirname -- "$0")"; pwd)"/.."
+
+_usage()
+{
+	echo "${BASE}/bin/lightyctl start|stop|restart|test [domain]"
+}
+
+_start()
+{
+	echo "Processing config directory: ${BASE}/conf/"
+	for conf in ${BASE}/conf/master.conf ${BASE}/conf/vhost-*.conf; do
+		if [ -n "$domain" ]; then
+			echo "$conf" | fgrep -v -q "$domain" && continue
+		fi
+		lighttpd -t -f "$conf" 1>/dev/null
+		if [ "$?" ]; then
+			echo " Processing config file: $conf"
+			filename=$(basename "$conf")
+			root=$(egrep "^[[:space:]]*server.chroot" "$conf" | cut -f 2 -d '"')
+			#lighttpd -f "$conf" && echo "$!" > "${BASE}/run/lighty-${filename}"
+			lighttpd -D -f "$conf" & PID=$!
+			if [ "$?" -eq 0 ]; then
+				echo "$PID" > "${BASE}/run/lighty-${filename}"
+			fi
+			egrep -q "^[[:space:]]*fastcgi.server" "$conf" || continue
+			if [ -x "${root}/bin/spawn-php.sh" ]; then
+				${root}/bin/spawn-php.sh "${BASE}/run/fcgi-${filename}"
+			fi
+		fi
+	done
+
+	echo "${BASE}/bin/lightyctl: all configurations processed"
+}
+
+_test()
+{
+	echo "Processing config directory: ${BASE}/conf/"
+	for conf in ${BASE}/conf/master.conf ${BASE}/conf/vhost-*.conf; do
+		if [ -n "$domain" ]; then
+			echo "$conf" | fgrep -v -q "$domain" && continue
+		fi
+		result=$(lighttpd -t -f "$conf" 2>&1)
+		name=$(basename "$conf")
+		echo " ${result}: $name"
+	done
+
+	echo "${BASE}/bin/lightyctl: all configurations processed"
+}
+
+_stop ()
+{
+	ret=0
+#	pkill lighttpd
+	for pidfile in ${BASE}/run/*; do
+		if [ ! -e "$pidfile" ] || [ -z "$(cat $pidfile)" ]; then break; fi
+		if [ -n "$domain" ]; then
+			echo "$pidfile" | fgrep -v -q "$domain" && continue
+		fi
+		kill "$(cat $pidfile)" # && rm -f "$pidfile"
+	done
+	sleep 3
+
+	for pidfile in ${BASE}/run/*; do
+		if [ ! -e "$pidfile" ] || [ -z "$(cat $pidfile)" ]; then break; fi
+		if [ -n "$domain" ]; then
+			echo "$pidfile" | fgrep -v -q "$domain" && continue
+		fi
+		ps -p "$(cat $pidfile)" 1>/dev/null 2>&1
+		if [ "$?" -eq 0 ]; then
+			# PIDs found.
+			echo "processes remained: $(cat $pidfile)"
+			ret=1
+		else
+			rm -f "$pidfile"
+		fi
+	done
+	return "$ret"
+#	ps=$(pgrep -x -l lighttpd ; pgrep -x -l php-fastcgi)
+#	if [ "$ps" != "" ]; then
+#		echo "processes remained:"
+#		echo "$ps"
+#		exit 1
+#	fi
+}
+
+if [ -n "$2" ]; then
+	domain=$2
+fi
+
+case "$1" in
+	"start") _start ;;
+	"restart") _stop && _start ;;
+	"stop") _stop ;;
+	"test") _test ;;
+	*) _usage ;;
+esac

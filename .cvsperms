@@ -1,0 +1,135 @@
+#	   user: iku
+#	machine: kameli.lan
+#	   tree: /tmp/tmp.IWuvKh5367/www
+#	   date: Wed Sep  5 19:52:46 2007
+
+# .
+/set type=file uid=0 gid=0 mode=0700
+.               type=dir mode=0755
+    .cvsperms       mode=0644
+
+# ./bin
+/set type=file uid=0 gid=0 mode=0755
+    bin             type=dir mode=0750
+        chroot_objects 
+        lightyctl      
+        vhostctl       
+    # ./bin
+    ..
+
+
+# ./conf
+    conf            type=dir mode=0750
+    # ./conf
+    ..
+
+
+# ./empty
+/set type=file uid=0 gid=0 mode=0644
+    empty           type=dir mode=0755
+        404.html       
+        admin.png      
+
+# ./empty/logs
+/set type=file uid=0 gid=0 mode=0640
+        logs            type=dir mode=0755
+            error_log       uid=32767
+        # ./empty/logs
+        ..
+
+    # ./empty
+    ..
+
+
+# ./run
+    run             type=dir mode=0700
+    # ./run
+    ..
+
+
+# ./skel
+/set type=file uid=0 gid=0 mode=0755
+    skel            type=dir mode=0700
+        genspecs.sh    
+
+# ./skel/conf_samples
+/set type=file uid=0 gid=0 mode=0640
+        conf_samples    type=dir mode=0755
+            master.conf    
+            sub.conf       
+        # ./skel/conf_samples
+        ..
+
+
+# ./skel/data
+/set type=file uid=0 gid=0 mode=0755
+        data            type=dir mode=0751
+
+# ./skel/data/bin
+/set type=file uid=0 gid=0 mode=0700
+            bin             type=dir mode=0755
+                spawn-php.sh   
+            # ./skel/data/bin
+            ..
+
+
+# ./skel/data/fastcgi
+            fastcgi         type=dir mode=0755
+            # ./skel/data/fastcgi
+            ..
+
+
+# ./skel/data/htdocs
+            htdocs          type=dir mode=0755
+            # ./skel/data/htdocs
+            ..
+
+
+# ./skel/data/logs
+/set type=file uid=0 gid=0 mode=0640
+            logs            type=dir mode=0755
+                access_log     
+                error_log      
+            # ./skel/data/logs
+            ..
+
+
+# ./skel/data/modules
+            modules         type=dir mode=0755
+            # ./skel/data/modules
+            ..
+
+
+# ./skel/data/tmp
+            tmp             type=dir mode=0700
+            # ./skel/data/tmp
+            ..
+
+        # ./skel/data
+        ..
+
+
+# ./skel/specs
+/set type=file uid=0 gid=0 mode=0644
+        specs           type=dir mode=0755
+            fastcgi-vhost.spec
+        # ./skel/specs
+        ..
+
+    # ./skel
+    ..
+
+
+# ./ssl
+    ssl             type=dir mode=0700
+    # ./ssl
+    ..
+
+
+# ./webdata
+    webdata         type=dir mode=0751
+    # ./webdata
+    ..
+
+..
+
