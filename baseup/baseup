@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: baseup,v 1.27 2008/08/05 14:13:13 iku Exp $
+# $Id: baseup,v 1.28 2008/08/05 14:24:55 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -123,7 +123,7 @@ case "$_VAL" in
 
 		if [ -n "$ans" ]; then
 			for disabled_driver in $ans; do
-				disabled_drivers="${disabled_drivers}${disabled_driver}\n"
+				disabled_drivers="${disabled_drivers}disable ${disabled_driver}\n"
 			done
 			disabled_drivers="${disabled_drivers}\nquit\n"
 			printf "$disabled_drivers" | config -ef /bsd
