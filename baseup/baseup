@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: baseup,v 1.26 2008/06/14 16:49:35 iku Exp $
+# $Id: baseup,v 1.27 2008/08/05 14:13:13 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -107,6 +107,28 @@ case "$_VAL" in
 		cp -f "${TEMPS}/"bsd* /
 
 		echo "Kernel(s) installed"
+
+		get_config "disabled_drivers"
+		if [ "$?" -ne "0" ]; then
+			echo -n "List of drivers to be disabled? (Usually empty) "
+			read ans
+			set_config "disabled_drivers" "$ans"
+			if [ "$?" -ne "0" ]; then
+				echo "Failed to set configuration."
+				exit 1
+			fi
+		else
+			ans=$_VAL
+		fi
+
+		if [ -n "$ans" ]; then
+			for disabled_driver in $ans; do
+				disabled_drivers="${disabled_drivers}${disabled_driver}\n"
+			done
+			disabled_drivers="${disabled_drivers}\nquit\n"
+			printf "$disabled_drivers" | config -ef /bsd
+			printf "$disabled_drivers" | config -ef /bsd.mp
+		fi
 
 		echo "New config state written, reboot and re-run this script after reboot"
 		set_config state install_base
