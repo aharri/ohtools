@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: dyndns,v 1.16 2008/05/28 04:50:43 iku Exp $
+# $Id: dyndns,v 1.17 2008/08/14 16:47:12 iku Exp $
 #
 # Copyright (c) 2008 Antti Harri <iku@openbsd.fi>
 #
@@ -54,12 +54,14 @@ elif [ "$1" = "-s" ]; then
 				if [ ! -f "$CACHE/$h" ]; then
 					cp "$h" "$CACHE/"
 				fi
-				MODIFIED=1
 
-				IP=$(cat "$h")
-				h=$(echo "$h" | cut -f 1 -d '.')
-				perl -pi -e "s/^$h\s+IN\s+A.*/$h\tIN\tA\t$IP/" "$TMP"
-				cp "$h.host" "$CACHE/"
+				IP=$(head -n 1 "$h" | egrep -e '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$')
+				if [ -n "$IP" ]; then
+					MODIFIED=1
+					h=$(echo "$h" | cut -f 1 -d '.')
+					perl -pi -e "s/^$h\s+IN\s+A.*/$h\tIN\tA\t$IP/" "$TMP"
+					cp "$h.host" "$CACHE/"
+				fi
 			fi
 		done
 		if [ "$MODIFIED" = 1 ]; then
