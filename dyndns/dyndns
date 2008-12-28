@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: dyndns,v 1.17 2008/08/14 16:47:12 iku Exp $
+# $Id: dyndns,v 1.18 2008/12/28 20:38:45 iku Exp $
 #
 # Copyright (c) 2008 Antti Harri <iku@openbsd.fi>
 #
@@ -84,7 +84,7 @@ else
 		exit 1
 	fi
 	# Get IP from ifconfig
-	IP=$(ifconfig "$1" | fgrep 'inet ' | awk '{print $2 }') || exit 1
+	IP=$(ifconfig "$1" | fgrep 'inet ' | sed -n 's|^.*inet[a-z :]*\([0-9][^ ]*\) .*$|\1|p') || exit 1
 	# Weed out local IPs
 	IP=$(printf '%s\n' "$IP" | egrep -v '^(10\.|172\.|192\.)')
 
