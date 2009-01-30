@@ -1,15 +1,15 @@
 #!/bin/sh
 
 ## ABSOLUTE path to the spawn-fcgi binary
-SPAWNFCGI="/usr/local/bin/spawn-fcgi"
+SPAWNFCGI=
 
 ## ABSOLUTE path to the PHP binary
-FCGIPROGRAM="/fastcgi/php-fastcgi"
+FCGIPROGRAM=
 
 ## TCP port to which to bind on localhost
 FCGIPORT="1026"
 ## Or socket, socket overrides FCGIPORT
-PHP_FCGI_SOCKET="/tmp/php-fcgi.sock"
+PHP_FCGI_SOCKET=
 
 ## number of PHP children to spawn
 PHP_FCGI_CHILDREN=10
@@ -28,7 +28,7 @@ USERID=www
 GROUPID=www
 
 ## chroot
-WEBROOT=/www/webdata/saitti.lan/
+WEBROOT=
 
 ################## no config below this line
 
@@ -51,8 +51,12 @@ if [ -n "$1" ]; then
 	PIDFILE="-P $1"
 fi
 
-if test x$(id -u) = x0; then
-  EX="$SPAWNFCGI -c $WEBROOT $PIDFILE $BIND -f $FCGIPROGRAM -u $USERID -g $GROUPID -C $PHP_FCGI_CHILDREN"
+if [ -n "$WEBROOT" ]; then
+	WEBROOT="-C $WEBROOT"
+fi
+
+if [ x$(id -u) ]; then
+  EX="$SPAWNFCGI $WEBROOT $PIDFILE $BIND -f $FCGIPROGRAM -u $USERID -g $GROUPID -C $PHP_FCGI_CHILDREN"
 else
   EX="$SPAWNFCGI $PIDFILE $BIND -f $FCGIPROGRAM -C $PHP_FCGI_CHILDREN"
 fi

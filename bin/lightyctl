@@ -21,15 +21,15 @@ _start()
 		if [ "$?" ]; then
 			echo " Processing config file: $conf"
 			filename=$(basename "$conf")
-			root=$(egrep "^[[:space:]]*server.chroot" "$conf" | cut -f 2 -d '"')
+			instroot=$(egrep "^[[:space:]]*var.vhost-installpath" "$conf" | cut -f 2 -d '"' | tail -n 1)
 			#lighttpd -f "$conf" && echo "$!" > "${BASE}/run/lighty-${filename}"
 			lighttpd -D -f "$conf" & PID=$!
 			if [ "$?" -eq 0 ]; then
 				echo "$PID" > "${BASE}/run/lighty-${filename}"
 			fi
 			egrep -q "^[[:space:]]*fastcgi.server" "$conf" || continue
-			if [ -x "${root}/bin/spawn-php.sh" ]; then
-				${root}/bin/spawn-php.sh "${BASE}/run/fcgi-${filename}"
+			if [ -x "${instroot}/bin/spawn-php.sh" ]; then
+				${instroot}/bin/spawn-php.sh "${BASE}/run/fcgi-${filename}"
 			fi
 		fi
 	done
@@ -57,7 +57,11 @@ _stop ()
 	ret=0
 #	pkill lighttpd
 	for pidfile in ${BASE}/run/*; do
-		if [ ! -e "$pidfile" ] || [ -z "$(cat $pidfile)" ]; then break; fi
+		# this will fail if there aren't any files
+		if [ ! -e "$pidfile" ]; then break; fi
+		# check for empty pidfile
+		if [ -z "$(cat $pidfile)" ]; then continue; fi
+		# if user supplied domain, match it or continue the loop
 		if [ -n "$domain" ]; then
 			echo "$pidfile" | fgrep -v -q "$domain" && continue
 		fi
@@ -66,7 +70,11 @@ _stop ()
 	sleep 3
 
 	for pidfile in ${BASE}/run/*; do
-		if [ ! -e "$pidfile" ] || [ -z "$(cat $pidfile)" ]; then break; fi
+		# this will fail if there aren't any files
+		if [ ! -e "$pidfile" ]; then break; fi
+		# check for empty pidfile
+		if [ -z "$(cat $pidfile)" ]; then continue; fi
+		# if user supplied domain, match it or continue the loop
 		if [ -n "$domain" ]; then
 			echo "$pidfile" | fgrep -v -q "$domain" && continue
 		fi
