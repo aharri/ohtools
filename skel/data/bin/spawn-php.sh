@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ## ABSOLUTE path to the spawn-fcgi binary
-SPAWNFCGI=
+SPAWNFCGI="/usr/local/bin/spawn-fcgi"
 
 ## ABSOLUTE path to the PHP binary
 FCGIPROGRAM=
@@ -30,6 +30,9 @@ GROUPID=www
 ## chroot
 WEBROOT=
 
+## config directory containing php.ini
+CONF_DIR=
+
 ################## no config below this line
 
 if test x$PHP_FCGI_CHILDREN = x; then
@@ -56,9 +59,9 @@ if [ -n "$WEBROOT" ]; then
 fi
 
 if [ x$(id -u) ]; then
-  EX="$SPAWNFCGI $WEBROOT $PIDFILE $BIND -f $FCGIPROGRAM -u $USERID -g $GROUPID -C $PHP_FCGI_CHILDREN"
+  EX="$SPAWNFCGI $WEBROOT $PIDFILE $BIND -u $USERID -g $GROUPID -C $PHP_FCGI_CHILDREN -- $FCGIPROGRAM -c $CONF_DIR"
 else
-  EX="$SPAWNFCGI $PIDFILE $BIND -f $FCGIPROGRAM -C $PHP_FCGI_CHILDREN"
+  EX="$SPAWNFCGI $PIDFILE $BIND -C $PHP_FCGI_CHILDREN -- $FCGIPROGRAM -c $CONF_DIR"
 fi
 
 # copy the allowed environment variables
