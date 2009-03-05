@@ -31,7 +31,8 @@ BASE=$(cd -- "$(dirname -- "$0")"; pwd)"/.."
 
 _usage()
 {
-	echo "${BASE}/bin/vhostctl update|add|remove [domain]"
+	echo "${BASE}/bin/vhostctl update [domain]"
+	echo "${BASE}/bin/vhostctl add|remove domain"
 }
 
 if [ "$#" -lt 1 ]; then
@@ -161,7 +162,20 @@ _update()
 
 _add()
 {
-	echo "not yet implemented!"
+	if [ -z "$domain" ]; then
+		_usage
+		exit 1
+	fi
+	${BASE}/bin/lightyctl test "$domain"
+	if [ "$?" -ne 0 ]; then
+		echo "Configure vhost first"
+		exit 1
+	fi
+	echo "Creating vhost called $domain"
+	sleep 3
+	cp -pr "${BASE}/skel/data/" "${BASE}/webdata/${domain}"
+	echo "Skeleton copied, now running update on it"
+	_update "$domain"
 }
 
 _remove()

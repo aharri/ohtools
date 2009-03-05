@@ -39,17 +39,25 @@ _start()
 
 _test()
 {
+	retval2=0
 	echo "Processing config directory: ${BASE}/conf/"
 	for conf in ${BASE}/conf/master.conf ${BASE}/conf/vhost-*.conf; do
 		if [ -n "$domain" ]; then
 			echo "$conf" | fgrep -v -q "$domain" && continue
 		fi
 		result=$(lighttpd -t -f "$conf" 2>&1)
+		retval=$?
+		# Choose highest return value to indicate error when last
+		# one succeeds too
+		if [ "$retval" -gt "$retval2" ]; then
+			retval2=$retval
+		fi
 		name=$(basename "$conf")
 		echo " ${result}: $name"
 	done
 
 	echo "${BASE}/bin/lightyctl: all configurations processed"
+	exit "$retval2"
 }
 
 _stop ()
