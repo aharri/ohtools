@@ -31,7 +31,7 @@ BASE=$(cd -- "$(dirname -- "$0")"; pwd)"/.."
 
 _usage()
 {
-	echo "${BASE}/bin/vhostctl [update|add|remove]"
+	echo "${BASE}/bin/vhostctl update|add|remove [domain]"
 }
 
 if [ "$#" -lt 1 ]; then
@@ -48,6 +48,9 @@ _update()
 {
 	echo "Processing config directory: ${BASE}/conf/"
 	for conf in ${BASE}/conf/vhost-*.conf; do
+		if [ -n "$domain" ]; then
+			echo "$conf" | fgrep -v -q "$domain" && continue
+		fi
 		echo " Processing config file: $conf"
 
 		# Check for FastCGI, else continue
@@ -165,6 +168,10 @@ _remove()
 {
 	echo "not yet implemented!"
 }
+
+if [ -n "$2" ]; then
+	domain=$2
+fi
 
 case "$1" in
 	"update") _update ;;
