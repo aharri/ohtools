@@ -55,13 +55,14 @@ if [ -n "$1" ]; then
 fi
 
 if [ -n "$WEBROOT" ]; then
-	WEBROOT="-C $WEBROOT"
+	WEBROOT="-c $WEBROOT"
 fi
 
+# FIXME: $CONF_DIR isn't used when chrooting takes place
 if [ x$(id -u) ]; then
-  EX="$SPAWNFCGI $WEBROOT $PIDFILE $BIND -u $USERID -g $GROUPID -C $PHP_FCGI_CHILDREN -- $FCGIPROGRAM -c $CONF_DIR"
+	EX="$SPAWNFCGI $WEBROOT $PIDFILE $BIND -f $FCGIPROGRAM -u $USERID -g $GROUPID -C $PHP_FCGI_CHILDREN"
 else
-  EX="$SPAWNFCGI $PIDFILE $BIND -C $PHP_FCGI_CHILDREN -- $FCGIPROGRAM -c $CONF_DIR"
+	EX="$SPAWNFCGI $PIDFILE $BIND -C $PHP_FCGI_CHILDREN -- $FCGIPROGRAM -c $CONF_DIR"
 fi
 
 # copy the allowed environment variables
