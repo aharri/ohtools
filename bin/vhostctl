@@ -111,10 +111,9 @@ _update()
 		fi
 
 
-		if [ ! -f "${instroot}/bin/spawn-php.sh" ]; then
-			DEBUG "installing spawn-php.sh"
-			cp -f "${BASE}/skel/data/bin/spawn-php.sh" "${instroot}/bin/spawn-php.sh"
-		fi
+		DEBUG "installing spawn-php.sh"
+		cp -f "${BASE}/skel/data/bin/spawn-php.sh" "${instroot}/bin/spawn-php.sh"
+
 		if [ ! -f "${instroot}/fastcgi/php.ini" ]; then
 			DEBUG "installing php.ini"
 			cp -f "${BASE}/skel/conf_samples/php.ini" "${instroot}/fastcgi/php.ini"
