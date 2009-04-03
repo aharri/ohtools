@@ -63,7 +63,6 @@ _test()
 _stop ()
 {
 	ret=0
-#	pkill lighttpd
 	for pidfile in ${BASE}/run/*; do
 		# this will fail if there aren't any files
 		if [ ! -e "$pidfile" ]; then break; fi
@@ -73,7 +72,7 @@ _stop ()
 		if [ -n "$domain" ]; then
 			echo "$pidfile" | fgrep -v -q "$domain" && continue
 		fi
-		kill "$(cat $pidfile)" # && rm -f "$pidfile"
+		cat "$pidfile" | xargs -r kill
 	done
 	sleep 3
 
