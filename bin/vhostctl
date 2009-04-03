@@ -130,6 +130,9 @@ _update()
 			perl -pi -e "s,^PHP_FCGI_CHILDREN[[:space:]]*=.*$,PHP_FCGI_CHILDREN=$fastcgiprocs," "${instroot}/bin/spawn-php.sh"
 
 			if [ -n "$chroot" ]; then
+				DEBUG "Installing device nodes"
+				mkdir -p "${chroot}/dev"
+				(cd "${chroot}/dev" && /dev/MAKEDEV std)
 				perl -pi -e "s,^PHP_FCGI_SOCKET[[:space:]]*=.*$,PHP_FCGI_SOCKET=/tmp/php-fcgi.sock," "${instroot}/bin/spawn-php.sh"
 				perl -pi -e "s,^FCGIPROGRAM[[:space:]]*=.*$,FCGIPROGRAM=/fastcgi/php-fastcgi," "${instroot}/bin/spawn-php.sh"
 				perl -pi -e "s,^CONF_DIR[[:space:]]*=.*$,CONF_DIR=/fastcgi," "${instroot}/bin/spawn-php.sh"
