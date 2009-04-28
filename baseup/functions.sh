@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: functions.sh,v 1.12 2007/11/08 20:47:49 iku Exp $
+# $Id: functions.sh,v 1.13 2009/04/28 05:57:12 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -19,9 +19,9 @@ function query_index
 	_VAL=$(cd "${TEMPS}" && grep "^$1..\.tgz" index.txt)
 }
 
-function check_md5
+function check_sha256
 {
-	(cd "${TEMPS}" && fgrep "($1)" MD5 | md5 -c) 1>/dev/null 2>&1
+	(cd "${TEMPS}" && fgrep "($1)" SHA256 | cksum -a sha256 -c) 1>/dev/null 2>&1
 }
 
 function check_filesize
@@ -87,9 +87,9 @@ function fetch_files
 			continue
 		fi
 
-		check_md5 "$file"
+		check_sha256 "$file"
 		if [ "$?" -eq 0 ] && [ "$1" != '--nocomp' ]; then
-			printf "%-30s %s\n" "$file" "CACHED (md5 checked)"
+			printf "%-30s %s\n" "$file" "CACHED (sha256 checked)"
 			continue
 		elif [ -e "${TEMPS}/$file" ] && [ "$1" != '--nocomp' ]; then
 			check_filesize "$file"

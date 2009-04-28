@@ -25,7 +25,7 @@ but there's always a chance for bug.
 
 -- Install, part 1 --
 
-1) Fetch directory indexes and MD5
+1) Fetch directory indexes and SHA256
 2) Fetch kernel and base
 3) Install kernel
 
@@ -43,4 +43,4 @@ but there's always a chance for bug.
 - Sane user.
 
 -- 
-$Id: specification.txt,v 1.4 2007/09/04 16:59:46 iku Exp $
+$Id: specification.txt,v 1.5 2009/04/28 05:57:12 iku Exp $
