@@ -23,7 +23,7 @@ _start()
 			filename=$(basename "$conf")
 			instroot=$(egrep "^[[:space:]]*var.vhost-installpath" "$conf" | cut -f 2 -d '"' | tail -n 1)
 			#lighttpd -f "$conf" && echo "$!" > "${BASE}/run/lighty-${filename}"
-			lighttpd -D -f "$conf" & PID=$!
+			lighttpd-angel -D -f "$conf" & PID=$!
 			if [ "$?" -eq 0 ]; then
 				echo "$PID" > "${BASE}/run/lighty-${filename}"
 			fi
