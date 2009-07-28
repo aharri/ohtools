@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: functions.sh,v 1.14 2009/05/07 05:23:40 iku Exp $
+# $Id: functions.sh,v 1.15 2009/07/28 06:30:08 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -16,7 +16,7 @@ function usage
 
 function query_index
 {
-	_VAL=$(cd "${TEMPS}" && awk '{ print $10 }' index.txt | grep "^$1..\.tgz")
+	_VAL=$(cd "${TEMPS}" && egrep "(^|^.* )$1..\.tgz$" index.txt | perl -pe "s/(^|^.* )($1..\.tgz)$/\2/")
 }
 
 function check_sha256
