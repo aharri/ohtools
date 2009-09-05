@@ -1,0 +1,50 @@
+#!/bin/sh
+
+#
+# $Id: pkgpurge,v 1.1 2009/09/05 18:27:05 iku Exp $
+#
+
+function move_cursor_up {
+	tput up dl 0
+}
+
+function check_for_packages {
+	for package in $( ls "/var/db/pkg" ); {
+		echo "Checking for $package"
+		if ! { test -a "/var/db/pkg/$package/+REQUIRED_BY" || {
+package_name=$( echo "$package" | sed "s/-[^-]\{1,\}$//" ); grep -qs \
+"$package_name" "$HOME/.pkg_check.conf"; } } then
+			move_cursor_up
+			echo -n "No package depends on $package, would you like to delete it? y/n "
+			while true; do
+				read answer
+				case $answer in
+					y)
+						sudo pkg_delete "$package"
+						let "deleted_packages = 1"
+						break
+						;;
+					n )
+						echo "$package_name" >> "$HOME/.pkg_check.conf"
+						break
+						;;
+					* )
+						echo -n 'y/n '
+						;;
+				esac
+			done
+		else
+			move_cursor_up
+		fi
+	}
+}
+
+while true; do
+	check_for_packages
+	if ! let "deleted_packages"; then
+		break
+	fi
+	let "deleted_packages = 0"
+
+	echo -n "\nRunning from the top to see new obsolete packages."
+done

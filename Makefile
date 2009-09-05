@@ -6,7 +6,8 @@ PROJS=\
 	tempy \
 	check_errata \
 	hotplug \
-	dyndns
+	dyndns \
+	pkgpurge
 #	mbox_pruner
 
 
@@ -59,6 +60,10 @@ dyndns:
 	${BSD_INSTALL_SCRIPT} $@/$@ ${DESTDIR}${PREFIX}/bin/
 	${BSD_INSTALL_DATA_DIR} ${DESTDIR}${PREFIX}/share/examples/$@
 	${BSD_INSTALL_DATA} $@/etc/$@.conf ${DESTDIR}${PREFIX}/share/examples/$@/
+
+pkgpurge:
+	@echo "Installing project specific files for $@"
+	${BSD_INSTALL_SCRIPT} $@/$@ ${DESTDIR}${PREFIX}/bin/
 
 generic_install_routine:
 .for p in ${PROJS}
