@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: baseup,v 1.29 2009/04/28 05:57:12 iku Exp $
+# $Id: baseup,v 1.30 2009/09/05 16:26:47 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -165,7 +165,11 @@ case "$_VAL" in
 		set_config state install_kernel
 
 		if [ -n "$sysmerge_cmd" ]; then
-			sysmerge -a $sysmerge_cmd
+			echo -n "Run sysmerge? (recommended) (Y/n) "
+			read ans
+			if [ "$ans" != "n" ]; then
+				sysmerge $sysmerge_cmd
+			fi
 		fi
 
 	;;
