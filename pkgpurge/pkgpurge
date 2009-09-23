@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $Id: pkgpurge,v 1.1 2009/09/05 18:27:05 iku Exp $
+# $Id: pkgpurge,v 1.2 2009/09/23 19:06:30 iku Exp $
 #
 
 function move_cursor_up {
@@ -9,7 +9,8 @@ function move_cursor_up {
 }
 
 function check_for_packages {
-	for package in $( ls "/var/db/pkg" ); {
+	local purge
+	for package in $( ls "/var/db/pkg" ); do
 		echo "Checking for $package"
 		if ! { test -a "/var/db/pkg/$package/+REQUIRED_BY" || {
 package_name=$( echo "$package" | sed "s/-[^-]\{1,\}$//" ); grep -qs \
@@ -20,7 +21,7 @@ package_name=$( echo "$package" | sed "s/-[^-]\{1,\}$//" ); grep -qs \
 				read answer
 				case $answer in
 					y)
-						sudo pkg_delete "$package"
+						purge="$purge $package"
 						let "deleted_packages = 1"
 						break
 						;;
@@ -36,7 +37,10 @@ package_name=$( echo "$package" | sed "s/-[^-]\{1,\}$//" ); grep -qs \
 		else
 			move_cursor_up
 		fi
-	}
+	done
+	if [ -n "$purge" ]; then
+		sudo pkg_delete $purge
+	fi
 }
 
 while true; do
