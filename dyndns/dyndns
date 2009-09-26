@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: dyndns,v 1.18 2008/12/28 20:38:45 iku Exp $
+# $Id: dyndns,v 1.19 2009/09/26 20:14:23 iku Exp $
 #
 # Copyright (c) 2008 Antti Harri <iku@openbsd.fi>
 #
@@ -27,6 +27,11 @@ else
 	exit 1
 fi
 
+# Tmp
+TMP=$(mktemp) || exit 1
+TMP2=$(mktemp) || exit 1
+trap "rm -f \"$TMP\" \"$TMP2\"" EXIT
+
 # No parameters.
 if [ -z "$1" ]; then
 	echo "Give interface name as an argument"
@@ -36,10 +41,6 @@ if [ -z "$1" ]; then
 elif [ "$1" = "-s" ]; then
 	# Init
 	cd "$HOSTS_DIR" || exit 1
-
-	# Tmp
-	TMP=$(mktemp) || exit 1
-	trap "rm -f \"$TMP\"" EXIT
 
 	# Cache dir
 	if [ ! -d "$CACHE" ]; then
@@ -96,10 +97,13 @@ else
 
 	MYHOST=$(hostname -s)
 
-	ssh \
+	echo "$IP" > "$TMP"
+	echo "put $TMP ${MYHOST}.host" > "$TMP2"
+
+	sftp -v \
 		-i "$KEY" \
 		-o PasswordAuthentication=no \
 		-o BatchMode=yes \
-		"${USER}@${DEST}" \
-		"echo $IP > ${MYHOST}.host"
+		-b "$TMP2" \
+		"${USER}@${DEST}"
 fi

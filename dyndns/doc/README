@@ -20,21 +20,14 @@ Match Group dyndns
         X11Forwarding no
         ChrootDirectory /chroots
 
-$ ls -l /chroots/
-total 6
-drwxr-xr-x    2 root     wheel         512 May 27 10:40 bin
-drwxr-xr-x    2 root     wheel         512 May 27 10:42 dev
+# mkdir /chroots/home
+# ls -l /chroots/
 drwxr-xr-x    3 root     wheel         512 May 27 11:12 home
 
-mkdir these and copy sh into bin/
+Move/copy dyndns user into home/dyndns according to passwd
+file's home directory.
 
-Copy MAKEDEV into dev/ and MAKEDEV std and arandom.
-
-Copy dyndns user into home/dyndns according to passwd
-file's homedirectory.
-
-Copy public key into your dyndns user's REAL home dir
-(/home/dyndns/.ssh/).
-
+Copy public key to /chroots/home/dyndns/.ssh/authorized_keys)
+and symlink /home/dyndns -> /chroots/home/dyndns .
 --
-$Id: README,v 1.4 2008/05/27 16:33:34 iku Exp $
+$Id: README,v 1.5 2009/09/26 20:14:23 iku Exp $
