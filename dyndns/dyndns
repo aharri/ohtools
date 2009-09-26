@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: dyndns,v 1.19 2009/09/26 20:14:23 iku Exp $
+# $Id: dyndns,v 1.20 2009/09/26 20:24:48 iku Exp $
 #
 # Copyright (c) 2008 Antti Harri <iku@openbsd.fi>
 #
@@ -100,7 +100,7 @@ else
 	echo "$IP" > "$TMP"
 	echo "put $TMP ${MYHOST}.host" > "$TMP2"
 
-	sftp -v \
+	sftp \
 		-i "$KEY" \
 		-o PasswordAuthentication=no \
 		-o BatchMode=yes \
