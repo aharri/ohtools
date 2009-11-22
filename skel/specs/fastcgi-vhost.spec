@@ -11,6 +11,12 @@ bin             type=dir mode=0755
 ..
 
 
+# ./etc
+etc         type=dir mode=0700
+# ./etc
+..
+
+
 # ./fastcgi
 fastcgi         type=dir mode=0755
 # ./fastcgi

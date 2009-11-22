@@ -26,7 +26,7 @@
 # module dir, it's should be pretty static
 APACHE_MODS=/var/www/lib/php/modules
 # logs can be removed once lighttpd's team has fixed the log issue
-CHOWNS="tmp/ logs/access_log logs/error_log"
+CHOWNS="etc/ tmp/ logs/access_log logs/error_log"
 BASE=$(cd -- "$(dirname -- "$0")"; pwd)"/.."
 
 _usage()
