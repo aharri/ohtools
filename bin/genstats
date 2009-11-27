@@ -1,0 +1,60 @@
+#/bin/sh
+
+# Exit on error
+set -e 
+
+die()
+{
+	echo "$1"
+	exit 1
+}
+
+which visitors 1>/dev/null 2>&1 || die "visitors binary needed, please install and make sure it is in PATH."
+
+BASE=$(cd -- "$(dirname -- "$0")"; pwd)"/.."
+FLAGS="-T -K -Z -U -W -M -R -O -B -X -Y -S"
+
+echo "Processing config directory: ${BASE}/conf/"
+for conf in ${BASE}/conf/vhost-*.conf; do
+	domain=$(echo "$conf" | perl -pe 's/.*vhost-(.*).conf/$1/')
+	echo " Processing domain: $domain"
+
+	docroot=$(egrep "^[[:space:]]*server.document-root" "$conf" | cut -f 2 -d '"' | tail -n 1)
+	instroot=$(egrep "^[[:space:]]*var.vhost-installpath" "$conf" | cut -f 2 -d '"' | tail -n 1)
+
+	logdir="${instroot}/logs"
+	statdir="${instroot}/${docroot}/stats"
+
+	if [ ! -d "$statdir" ]; then continue; fi
+
+	cd "$statdir"
+	visitors $FLAGS -f "${statdir}/current.html" --prefix "http://$domain/" "${logdir}/access_log"
+	for file in "$logdir"/access_log.*.gz; do
+		y=$(date +%Y)
+		m=$(zfgrep "logfile turned over" "$file" | tail -n 1 | cut -b 1-3)
+		case $m in
+			Jan) m=12 ; y=$((y - 1));;
+			Feb) m=01 ;;
+			Mar) m=02 ;;
+			Apr) m=03 ;;
+			May) m=04 ;;
+			Jun) m=05 ;;
+			Jul) m=06 ;;
+			Aug) m=07 ;;
+			Sep) m=08 ;;
+			Oct) m=09 ;;
+			Nov) m=10 ;;
+			Dec) m=11 ;;
+			*)
+				echo "Unknown first line in $file, skipping"
+				continue
+				;;
+		esac
+		d="${statdir}/$y-$m.html"
+		[ ! -e "$d" ] && zcat "$file" | visitors $FLAGS -f "$d" --prefix "http://$domain/" -
+	done
+	rm -f index.html
+	for html in *.html ; do
+		printf "<p><a href=\"%s\">%s</a></p>" "$html" "$html" >> index.html
+	done
+done
