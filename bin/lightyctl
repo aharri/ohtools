@@ -22,11 +22,7 @@ _start()
 			echo " Processing config file: $conf"
 			filename=$(basename "$conf")
 			instroot=$(egrep "^[[:space:]]*var.vhost-installpath" "$conf" | cut -f 2 -d '"' | tail -n 1)
-			#lighttpd -f "$conf" && echo "$!" > "${BASE}/run/lighty-${filename}"
-			su -c _web root -c "exec /usr/local/sbin/lighttpd-angel -D -f \"$conf\"" & PID=$!
-			if [ "$?" -eq 0 ]; then
-				echo "$PID" > "${BASE}/run/lighty-${filename}"
-			fi
+			su -c _web root -c "exec /usr/local/sbin/lighttpd-angel -f \"$conf\""
 			egrep -q "^[[:space:]]*fastcgi.server" "$conf" || continue
 			if [ -x "${instroot}/bin/spawn-php.sh" ]; then
 				${instroot}/bin/spawn-php.sh "${BASE}/run/fcgi-${filename}"
@@ -35,6 +31,20 @@ _start()
 	done
 
 	echo "${BASE}/bin/lightyctl: all configurations processed"
+}
+
+_reload()
+{
+	ret=0
+	for pidfile in ${BASE}/run/lighty-*; do
+		# this will fail if there aren't any files
+		if [ ! -e "$pidfile" ]; then break; fi
+		# if user supplied domain, match it or continue the loop
+		if [ -n "$domain" ]; then
+			echo "$pidfile" | fgrep -v -q "$domain" && continue
+		fi
+		xargs -r kill -SIGHUP < "$pidfile"
+	done
 }
 
 _test()
@@ -66,26 +76,22 @@ _stop ()
 	for pidfile in ${BASE}/run/*; do
 		# this will fail if there aren't any files
 		if [ ! -e "$pidfile" ]; then break; fi
-		# check for empty pidfile
-		if [ -z "$(cat $pidfile)" ]; then continue; fi
 		# if user supplied domain, match it or continue the loop
 		if [ -n "$domain" ]; then
 			echo "$pidfile" | fgrep -v -q "$domain" && continue
 		fi
-		cat "$pidfile" | xargs -r kill
+		xargs -r kill < "$pidfile"
 	done
 	sleep 3
 
 	for pidfile in ${BASE}/run/*; do
 		# this will fail if there aren't any files
 		if [ ! -e "$pidfile" ]; then break; fi
-		# check for empty pidfile
-		if [ -z "$(cat $pidfile)" ]; then continue; fi
 		# if user supplied domain, match it or continue the loop
 		if [ -n "$domain" ]; then
 			echo "$pidfile" | fgrep -v -q "$domain" && continue
 		fi
-		ps -p "$(cat $pidfile)" 1>/dev/null 2>&1
+		xargs -r ps -p 1>/dev/null 2>&1 < "$pidfile"
 		if [ "$?" -eq 0 ]; then
 			# PIDs found.
 			echo "processes remained: $(cat $pidfile)"
@@ -95,12 +101,6 @@ _stop ()
 		fi
 	done
 	return "$ret"
-#	ps=$(pgrep -x -l lighttpd ; pgrep -x -l php-fastcgi)
-#	if [ "$ps" != "" ]; then
-#		echo "processes remained:"
-#		echo "$ps"
-#		exit 1
-#	fi
 }
 
 if [ -n "$2" ]; then
@@ -110,6 +110,7 @@ fi
 case "$1" in
 	"start") _start ;;
 	"restart") _stop && _start ;;
+	"reload") _reload ;;
 	"stop") _stop ;;
 	"test") _test ;;
 	*) _usage ;;
