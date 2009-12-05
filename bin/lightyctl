@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
+# Copyright (c) 2007,2009 Antti Harri <iku@openbsd.fi>
 
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 BASE=$(cd -- "$(dirname -- "$0")"; pwd)"/.."
