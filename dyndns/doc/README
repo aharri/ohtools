@@ -1,33 +1,6 @@
-COMMON:
-
 Generate your pubkey with ssh-keygen.
 
-CLIENT:
+[No server documentation yet]
 
-Install the sample configuration under /etc
-and change it's contents to reflect your dyndns
-host.
-
-Install the private key into /etc/dyndns.key
-
-SERVER:
-
-Here's example configurations for server side:
-
-sshd_config:
-Match Group dyndns
-        AllowTcpForwarding no
-        X11Forwarding no
-        ChrootDirectory /chroots
-
-# mkdir /chroots/home
-# ls -l /chroots/
-drwxr-xr-x    3 root     wheel         512 May 27 11:12 home
-
-Move/copy dyndns user into home/dyndns according to passwd
-file's home directory.
-
-Copy public key to /chroots/home/dyndns/.ssh/authorized_keys)
-and symlink /home/dyndns -> /chroots/home/dyndns .
 --
-$Id: README,v 1.5 2009/09/26 20:14:23 iku Exp $
+$Id: README,v 1.6 2010/02/09 16:24:36 iku Exp $
