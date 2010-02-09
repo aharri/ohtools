@@ -9,7 +9,7 @@ if [ -z "$1" ]; then
 	REL=current
 else
 	TAG=$1
-	REL=$1
+	REL=$2
 fi
 
 cd /tmp
