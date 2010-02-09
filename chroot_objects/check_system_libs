@@ -1,0 +1,101 @@
+#!/bin/sh
+# 
+# $Id: check_system_libs,v 1.1 2010/02/09 19:21:22 iku Exp $
+#
+# Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
+#
+
+usage_and_exit()
+{
+	echo "$0 directory library"
+	echo "directory: location of your chroot"
+	echo "library: .so file which dependencies to copy"
+	exit 1
+}
+
+if [ "$#" -lt 2 ] || [ ! -d "$1" ] || [ ! -f "$2" ]; then
+	usage_and_exit
+fi
+
+get_stuff()
+{
+# OpenBSD 4.2 and forward can handle files with ldd.
+# There's also another matter: readelf didn't list
+# all dependencies that xsl.so needed.. weird.
+#	type=$(file "$1" | cut -f 2 -d ':')
+#	if [ "$(echo $type | fgrep 'shared object')" != "" ]; then
+#		tempnames=$(readelf -d "$1" | fgrep " (NEEDED) " | cut -f 2 -d '[' | cut -f 1 -d ']')
+#		libnames=
+#		for temp in $tempnames; do
+#			temp=$(ldconfig -r | fgrep "/${temp}" | awk '{ print $3 }')
+#			libnames="$libnames $temp"
+#		done
+#	elif [ "$(echo $type | fgrep 'executable')" != "" ]; then
+		libnames=$(ldd "$1" | egrep -e '(rlib|rtld)' | awk '{ print $7 }')
+#	fi
+}
+parse()
+{
+	get_stuff "$2"
+	for lib in $libnames; do
+		libname=$(basename "$lib")
+		dir=$(dirname "$lib")
+
+		if [ ! -f "${1}/./${lib}" ]; then
+			#st_dev=0 st_ino=656640 st_mode=040755 st_nlink=33 st_uid=0 st_gid=0 st_rdev=2614252 st_size=3072 st_atime=1190570280 st_mtime=1190057186 st_ctime=1190057186 st_blksize=16384 st_blocks=8 st_flags=0
+			i=
+			IFS='/'
+			for element in $dir; do
+				if [ -z "$element" ]; then continue; fi
+				i="${i}/${element}/"
+				stat=$(stat -s "$i")
+				grp=$(echo "$stat" | awk '{ print $6 }' | cut -f 2 -d '=')
+				uid=$(echo "$stat" | awk '{ print $5 }' | cut -f 2 -d '=')
+				mode=$(echo "$stat" | awk '{ print $3 }' | cut -b 11-)
+				install -d -g "$grp" -o "$uid" -m "$mode" "${1}${i}" || (echo "FAILED" ; exit)
+			done
+			unset IFS
+			#mkdir -p "${1}/./${dir}/"
+			cp -p "$lib" "${1}/./${dir}/" || (echo "FAILED" ; exit)
+			echo "${3}${lib}"
+			parse "$1" "$lib" "$3  "
+		fi
+	done
+}
+
+#echo "starting copy"
+#parse "$1" "$2" ""
+
+tmp=$(mktemp)
+bins=$(mktemp)
+syslibs=$(mktemp)
+
+tmpfiles="$tmp $bins $syslibs"
+
+#file -f "$tmp" | fgrep -q ELF 
+
+find {,/usr,/usr/local}/{,s}bin -type f | while read -r fname; do
+	echo "$fname"
+	ldd "$fname" | egrep -e '(rlib|rtld)' | awk '{ print $7 }' >> "$tmp"
+
+done
+find {,/usr,/usr/local}/lib -name '*.so*' -type f | sort -u > "$syslibs"
+cat "$syslibs" "$tmp" | sort -u
+
+#rm -f "$tmpfiles"
+
+exit 
+for i in /usr/local/bin/*; do
+	if [ -x "$i" ]; then
+		(file "$i" | fgrep -q ELF) || continue
+		echo "$i"
+		get_stuff "$i"
+		reqlibs="$reqlibs $libnames"
+	fi
+done
+reqlibs=$(echo "$reqlibs" | sort -u)
+syslibs=$(find -name '*.so' -type f /lib /usr/lib /usr/local/lib | sort -u)
+
+echo "found these:"
+echo $(echo "$reqlibs" "$syslibs" | sort -u)
+
