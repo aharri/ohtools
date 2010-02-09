@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: dyndns,v 1.24 2010/02/08 20:49:19 iku Exp $
+# $Id: dyndns,v 1.25 2010/02/09 16:12:16 iku Exp $
 #
 # Copyright (c) 2008 Antti Harri <iku@openbsd.fi>
 #
@@ -31,7 +31,7 @@ fi
 
 # Tmp
 TMP=$(mktemp) || exit 1
-trap "rm -f \"$TMP\"" EXIT
+trap "rm -f \"$TMP\"" 0 1 2 13 15
 
 # Server mode.
 # Init
