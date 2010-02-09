@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# Copyright (c) 2008 Antti Harri <iku@openbsd.fi>
+
+_conf="cserv.conf"
+_services="ssh smtp http"
+_target="openbsd.fi"
+
+# check for configuration file
+if [ -x "$_conf" ]; then
+	. "$_conf"
+fi
+
+# check for services list
+if [ -x "./cserv.list" ]; then
+	. "./cserv.list"
+else
+	echo 'cserv.list missing!'
+	exit 1
+fi
+
+for _serv in $_services; do
+	"$_serv" "$_target"
+done
+
