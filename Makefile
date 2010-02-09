@@ -71,7 +71,4 @@ generic_install_routine:
 	${BSD_INSTALL_DATA_DIR} ${DESTDIR}${PREFIX}/share/doc/$p
 	${BSD_INSTALL_DATA} $p/LICENSE ${DESTDIR}${PREFIX}/share/doc/$p/
 	-${BSD_INSTALL_DATA} $p/doc/* ${DESTDIR}${PREFIX}/share/doc/$p/
-
-#	@echo "Installing script"
-#	-${BSD_INSTALL_SCRIPT} $p/$p ${DESTDIR}${PREFIX}/sbin/
 .endfor
