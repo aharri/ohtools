@@ -51,11 +51,14 @@ foreach ($urls as $url) {
 			// Format and output
 			// Name, (empty), Street address, Postal-code City, Phone, Postal box
 			printf("%s, , %s, %s %s, %s, %s\n", $item['name'], $item['addr'], $item['pcode'], $item['city'], $item['phone'],  $item['pobox']);
+			$block->clear();
+			unset($block);
 			unset($item);
 		}
-		unset($html);
 		unset($blocks);
-		unset($block);
+
+		$html->clear();
+		unset($html);
 	}
 }
 ?>
