@@ -67,14 +67,15 @@ if (is_resource($process)) {
 					$recent_mails[] = $matches[1];
 			}
 			foreach ($recent_mails as $recent_mail) {
-				$lines = imap_execute("fetch $recent_mail (body[header.fields (date from to subject)])", $pipes);
-				for ($i=1; $i<5; $i++) {
+				$lines = imap_execute("fetch $recent_mail (body[header.fields (date from to bcc cc subject)])", $pipes);
+				for ($i=1; $i<8; $i++) {
+					if (preg_match('#^\).?$#', $lines[$i]) == 1)
+						break;
 					print ($lines[$i]);
 				}
-				print("\n");
 			}
 		}
-		sleep(20);
+		sleep(30);
 	}
 
 	// It is important that you close any pipes before calling
