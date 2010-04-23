@@ -1,6 +1,13 @@
 #!/usr/local/bin/php
 <?php
 
+# Copyright (c) 2010 Antti Harri <iku@openbsd.fi>
+#
+# TODO: 
+# - Signal handler perhaps, to close everything gracefully.
+# - Way to define mailboxes to be parsed, include/exclude filter?
+#
+
 function imap_execute($cmd, &$pipes)
 {
 	$lines = array();

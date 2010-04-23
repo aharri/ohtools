@@ -1,0 +1,1 @@
+Requires: dovecot as IMAP server and PHP to run the script.
