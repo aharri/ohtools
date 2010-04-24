@@ -7,7 +7,8 @@ PROJS=\
 	check_errata \
 	hotplug \
 	dyndns \
-	pkgpurge
+	pkgpurge \
+	mailtail
 #	mbox_pruner
 
 
@@ -62,6 +63,10 @@ dyndns:
 	${BSD_INSTALL_DATA} $@/etc/$@.conf ${DESTDIR}${PREFIX}/share/examples/$@/
 
 pkgpurge:
+	@echo "Installing project specific files for $@"
+	${BSD_INSTALL_SCRIPT} $@/$@ ${DESTDIR}${PREFIX}/bin/
+
+mailtail:
 	@echo "Installing project specific files for $@"
 	${BSD_INSTALL_SCRIPT} $@/$@ ${DESTDIR}${PREFIX}/bin/
 
