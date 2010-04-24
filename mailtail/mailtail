@@ -58,6 +58,13 @@ if (is_resource($process)) {
 
 	while (true) {
 		foreach ($mailboxes as $mailbox) {
+			$lines = imap_execute("status $mailbox (recent)", $pipes);
+
+			preg_match('#\* STATUS "'.$mailbox.'" \(RECENT (\d+)\)#i', implode("\n", $lines), $matches);
+			if (!isset($matches[1]) || !is_numeric($matches[1]) || $matches[1] < 1) {
+				continue;
+			}
+
 			imap_execute("select $mailbox", $pipes);
 			$lines = imap_execute("fetch 1:* flags", $pipes);
 
