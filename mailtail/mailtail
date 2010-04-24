@@ -83,6 +83,7 @@ if (is_resource($process)) {
 					if (preg_match("#^($m): #i", $line, $matches) == 1)
 						$headers[strtolower($matches[1])] = $line;
 				}
+				print("New mail in $mailbox\n");
 				foreach ($match as $m)
 					if (isset($headers[$m])) print ($headers[$m]);
 				print("\n");
