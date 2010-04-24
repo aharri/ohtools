@@ -32,8 +32,7 @@ $descriptorspec = array(
 );
 
 $cwd = '/tmp';
-$env = array('USER' => 'iku', 'HOME' => '/home/iku');
-// $env = array();
+$env = array('USER' => getenv('USER'), 'HOME' => getenv('HOME'));
 
 $process = proc_open('/usr/local/sbin/dovecot --exec-mail imap', $descriptorspec, $pipes, $cwd, $env);
 
