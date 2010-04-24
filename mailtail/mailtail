@@ -6,6 +6,9 @@
 # TODO: 
 # - Signal handler perhaps, to close everything gracefully.
 # - Way to define mailboxes to be parsed, include/exclude filter?
+# - Error checking.
+# - Documentation.
+# - Put these into a class?
 #
 
 function imap_execute($cmd, &$pipes)
