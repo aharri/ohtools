@@ -171,8 +171,7 @@ function init_source
 {
 	echo "Let's begin. What address shall I use as package source?"
 	echo "Examples: "
-	echo "ftp://ftp.se.openbsd.org/pub/OpenBSD/snapshots/i386"
-	echo "ftp://ftp.openbsd.fi/pub/OpenBSD/4.0/i386"
+	echo "http://ftp.eu.openbsd.org/pub/OpenBSD/snapshots/`uname -m`"
 	read source
 	set_config source "$source"
 	if [ "$?" -ne "0" ]; then
