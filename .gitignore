@@ -1,0 +1,4 @@
+baseup/.config
+baseup/tmp/*
+mailfoo/testdata
+repolainen/config/repolainen.conf
