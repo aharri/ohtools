@@ -40,11 +40,13 @@ fi
 get_config state
 case "$_VAL" in
 	"install_kernel" ) # in the middle of fetching files
-		# Clean from previous run.
-		echo -n "Wipe out files from previous run? [Y/n] "
-		read ans
-		if [ "$ans" = "y" ] || [ -z "$ans" ]; then
-			rm -f "${TEMPS}/"*.tgz "${TEMPS}/"bsd* "${TEMPS}/"*boot*
+		get_config source
+		if [ "$_VAL" != "" ]; then
+			# Clean from previous run.
+			yesno "Wipe out files from previous run?"
+			if [ "$?" -eq 0 ]; then
+				rm -f "${TEMPS}/"*.tgz "${TEMPS}/"bsd* "${TEMPS}/"*boot*
+			fi
 		fi
 
 		# SOURCE
@@ -64,7 +66,7 @@ case "$_VAL" in
 		echo "Fetching SHA256 sums and index."
 		fetch_files --nocomp SHA256 index.txt
 
-		echo "Fetching new base images."
+		echo "Fetching new boot files and kernels."
 		fetch_files bsd.rd bsd
 		echo "Fetching architecture dependent files. Some may fail."
 		echo "Boot files will not be installed, update manually."
@@ -77,30 +79,32 @@ case "$_VAL" in
 		for pkg in $PKGS; do
 			get_config $pkg
 			if [ "$?" -ne "0" ]; then
-				echo "Do you wish to add $pkg to the list of packages to be installed?"
-				echo -n "The package will be fetched and later on installed if you answer yes. [Y/n] "
-				read ans
-				set_config $pkg "$ans"
-				if [ "$?" -ne "0" ]; then
+				yesno "Do you wish to add \"$pkg\" to the list of packages to be installed?"
+				if [ "$?" -eq 0 ]; then
+					ans=yes
+				else
+					ans=no
+				fi
+				set_config $pkg $ans
+				if [ "$?" -ne 0 ]; then
 					echo "Failed to set configuration."
 					exit 1
 				fi
-			else
+			elif [ "$_VAL" = "yes" ] || [ "$_VAL" = "no" ]; then
 				ans=$_VAL
 			fi
 
 			# Fetch it
-			if [ "$ans" != "n" ]; then
+			if [ "$ans" != "no" ]; then
 				query_index $pkg
 				fetch_files $_VAL
 			fi
 		done
 
 		# now install kernels
-		echo -n "About to install kernels, are you sure? (y/N) "
-		read ans
-		if [ "$ans" != "y" ] || [ $(id -u "$USER") -ne 0 ]; then
-			echo "User requested abort or user not root!"
+		yesno "About to install kernels, are you sure?" n
+		if [ "$?" -eq 1 ]; then
+			echo "User requested abort!"
 			exit 1
 		fi
 
@@ -136,10 +140,9 @@ case "$_VAL" in
 	;;
 	"install_base" )
 		# install the base packages
-		echo -n "About to install base packages, are you sure? (y/N) "
-		read ans
-		if [ "$ans" != "y" ] || [ $(id -u "$USER") -ne 0 ]; then
-			echo "User requested abort or user not root!"
+		yesno "About to install base packages, are you sure?" n
+		if [ "$?" -eq 1 ]; then
+			echo "User requested abort!"
 			exit 1
 		fi
 
@@ -166,9 +169,8 @@ case "$_VAL" in
 		set_config state install_kernel
 
 		if [ -n "$sysmerge_cmd" ]; then
-			echo -n "Run sysmerge? (recommended) (Y/n) "
-			read ans
-			if [ "$ans" != "n" ]; then
+			yesno "Run sysmerge (recommended)?"
+			if [ "$?" -eq 0 ]; then
 				sysmerge $sysmerge_cmd
 			fi
 		fi

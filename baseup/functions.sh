@@ -169,9 +169,9 @@ function fetch_listing
 
 function init_source
 {
-	echo "Let's begin. What address shall I use as package source?"
-	echo "Examples: "
-	echo "http://ftp.eu.openbsd.org/pub/OpenBSD/snapshots/`uname -m`"
+	echo "What address shall I use as package source?"
+	echo "Here's an example: http://ftp.eu.openbsd.org/pub/OpenBSD/snapshots/`uname -m`"
+	echo "You can edit baseup.conf later if you get this wrong."
 	read source
 	set_config source "$source"
 	if [ "$?" -ne "0" ]; then
@@ -179,3 +179,39 @@ function init_source
 		exit 1
 	fi
 }
+
+# Yes/No function
+# $1 is the message
+# $2 is the default action, otherwise default is yes
+yesno()
+{
+	local default
+	# repeat if yes or no option not valid
+	while true
+	do
+		# $* read first every parameter giving to the yesno function which will be the message
+		echo -n "$1 "
+		if [ -n "$2" ] && [ "$2" = "n" ]; then
+			default=1
+			echo -n "(y/N) "
+		else
+			default=0
+			echo -n "(Y/n) "
+		fi
+		# junk holds the extra parameters yn holds the first parameters
+		read yn junk
+		# check for difference cases
+		case $yn in
+			yes|Yes|YES|y|Y)
+				return 0
+				;;
+			no|No|n|N|NO)
+				return 1
+				;;
+			"")
+				return $default
+				;;
+		esac
+	done    
+}
+
