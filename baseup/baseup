@@ -77,7 +77,8 @@ case "$_VAL" in
 		for pkg in $PKGS; do
 			get_config $pkg
 			if [ "$?" -ne "0" ]; then
-				echo -n "Fetch and install $pkg ? (Y/n) "
+				echo "Do you wish to add $pkg to the list of packages to be installed?"
+				echo -n "The package will be fetched and later on installed if you answer yes. [Y/n] "
 				read ans
 				set_config $pkg "$ans"
 				if [ "$?" -ne "0" ]; then
