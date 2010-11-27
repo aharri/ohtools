@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: baseup,v 1.30 2009/09/05 16:26:47 iku Exp $
+# $Id: baseup,v 1.31 2010/11/27 18:57:45 iku Exp $
 #
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
@@ -72,7 +72,7 @@ case "$_VAL" in
 
 		# fetch only selected files
 		echo "Fetching base packages."
-		PKGS="base etc comp game man misc xbase xetc xfont xserv xshare"
+		PKGS="base etc comp game man xbase xetc xfont xserv xshare"
 
 		for pkg in $PKGS; do
 			get_config $pkg
