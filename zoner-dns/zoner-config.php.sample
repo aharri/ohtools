@@ -1,0 +1,9 @@
+<?php
+
+$zoner = array();
+$zoner['username'] = '';
+$zoner['password'] = '';
+$zoner['domain'] = '';
+
+
+?>
