@@ -26,10 +26,11 @@
  *  - Logout
  *
  * Install:
- *  - Drop this into zoner's htdocs dir
- *  - Touch and chmod 600 zoner-cookiefile zoner-config.php zoner-dns.db
- *  - Configure zoner-config.php
- *  - Configure ddclient
+ *  - Drop this into zoner's htdocs dir.
+ *  - Run 'make' to generate some files.
+ *  - Configure zoner-config.php.
+ *  - Add some users/hosts to zoner-dns.db.
+ *  - Configure ddclient.
  *  - Enjoy!
  */
 require "zoner-config.php";
