@@ -26,8 +26,8 @@
  *  - Logout
  *
  * Install:
- *  - Drop this to zoner's htdocs dir
- *  - Touch and chmod 600 zoner-cookiefile zoner-config.php
+ *  - Drop this into zoner's htdocs dir
+ *  - Touch and chmod 600 zoner-cookiefile zoner-config.php zoner-dns.db
  *  - Configure zoner-config.php
  *  - Configure ddclient
  *  - Enjoy!

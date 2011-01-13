@@ -1,9 +1,22 @@
 <?php
 
 $zoner = array();
+// Zoner control panel user name
 $zoner['username'] = '';
+// Zoner control panel password
 $zoner['password'] = '';
+// Domain linked to your account, specify only on.
 $zoner['domain'] = '';
+// Set to true if you have bought SSL to your Zoner account.
+$zoner['ssl'] = false;
+
+// No change usually required.
+define ('SQL_HOST',   '');
+define ('SQL_PREFIX', '');
+define ('SQL_USER',   '');
+define ('SQL_PASSWD', '');
+define ('SQL_DB',     'zoner-dns.db');
+define ('SQL_TYPE',   'sqlite');
 
 
 ?>
