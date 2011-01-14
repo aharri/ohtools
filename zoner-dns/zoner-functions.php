@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2011 Antti Harri <iku@openbsd.fi>
+ * Copyright (c) 2010,2011 Antti Harri <iku@openbsd.fi>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -162,6 +162,15 @@ function update_zoner_da($fqdn, $oldip, $newip)
 	if ($code != 302)
 		throw new Exception("Could not logout!\n");
 
+}
+
+function read_stdin($prompt=false)
+{
+	if ($prompt)
+		print($prompt);
+	$handle = fopen ("php://stdin","r");
+	$line = fgets($handle);
+	return trim($line);
 }
 
 ?>
