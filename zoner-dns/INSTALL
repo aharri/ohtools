@@ -1,0 +1,17 @@
+Install:
+
+ - Put the whole directory under Zoner's htdocs dir.
+
+ - Unless you installed zoner.php as nic/update you will need
+   to use htaccess.sample (for Apache) to make ddclient to work.
+   By default it sends GET request to <http://host/nic/update>.
+
+ - Run 'make' to generate some files.
+
+ - Run php usermod.php to add some users.
+
+ - Configure zoner-config.php.
+
+ - Configure ddclient, see the sample file.
+
+ - Enjoy!

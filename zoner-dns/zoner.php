@@ -14,9 +14,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * Remember to enable fetching of URLs, can be overridden from
- * command line like so: "php -d allow_url_fopen=on zoner.php"
- *
  * Zoner uses Direct Admin:
  *  - HTTP code 200 means error on POST
  *  - HTTP code 302 means success on POST
@@ -24,16 +21,6 @@
  *  - Then we add the new entry
  *  - Delete the old one
  *  - Logout
- *
- * Install:
- *  - Drop this into zoner's htdocs dir.
- *  - Unless you installed this as nic/update you will need
- *    to use htaccess.sample (for Apache) to make ddclient to work.
- *  - Run 'make' to generate some files.
- *  - Configure zoner-config.php.
- *  - Add some users/hosts to zoner-dns.db.
- *  - Configure ddclient.
- *  - Enjoy!
  */
 require "zoner-config.php";
 require "zoner-functions.php";
