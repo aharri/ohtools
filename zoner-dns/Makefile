@@ -21,4 +21,4 @@ ${COOKIE}:
 
 ${CONFIG}:
 	install -m 600 ${CONFIG}.sample ${CONFIG}
-	@echo "Remember to edit zoner.config.php"
+	@echo "Remember to edit ${CONFIG}"
