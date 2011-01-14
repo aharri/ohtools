@@ -12,6 +12,7 @@ ${DBFILE}:
 	(id integer primary key, \
 	user text, \
 	pass text, \
+	fqdn text \
 	oldip text, \
 	newip text);' | sqlite3 ${DBFILE}
 

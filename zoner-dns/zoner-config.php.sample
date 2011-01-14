@@ -5,8 +5,6 @@ $zoner = array();
 $zoner['username'] = '';
 // Zoner control panel password
 $zoner['password'] = '';
-// Domain linked to your account, specify only on.
-$zoner['domain'] = '';
 // Set to true if you have bought SSL to your Zoner account.
 $zoner['ssl'] = false;
 
