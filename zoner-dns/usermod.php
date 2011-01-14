@@ -47,7 +47,7 @@ switch ($mode)
 					(".db()->param('a').",".db()->param('b').",".db()->param('c').")
 				");
 				$rs->set($user);
-				$rs->set(crypt($pass, '$2a$10$'));
+				$rs->set(crypt($pass, '$1$'));
 				$rs->set($fqdn);
 				$rs->execute();
 			} catch (Exception $e) {
