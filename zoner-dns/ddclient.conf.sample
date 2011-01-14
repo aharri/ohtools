@@ -1,0 +1,15 @@
+daemon=300                              # check every 300 seconds
+syslog=yes                              # log update msgs to syslog
+mail=root                               # mail all msgs to root
+mail-failure=root                       # mail failed update msgs to root
+pid=/var/run/ddclient.pid               # record PID in file.
+ssl=no                                  # use ssl-support.  Works with
+                                        # ssl-library
+use=if, if=bge0         # via interfaces
+
+login=YOUR-LOGIN
+# Create password that PHP's crypt can use.
+password=YOUR-PASS
+server=YOUR-ZONER-DOMAIN
+protocol=dyndns2
+YOUR-DYNDNS-HOSTNAME
