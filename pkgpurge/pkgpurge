@@ -10,11 +10,10 @@ function move_cursor_up {
 
 function check_for_packages {
 	local purge
-	for package in $( ls "/var/db/pkg" ); do
+	for package in $(pkg_info -t | cut -f 1 -d ' '); do
 		echo "Checking for $package"
-		if ! { test -a "/var/db/pkg/$package/+REQUIRED_BY" || {
-package_name=$( echo "$package" | sed "s/-[^-]\{1,\}$//" ); grep -qs \
-"$package_name" "$HOME/.pkg_check.conf"; } } then
+		if ! { package_name=$( echo "$package" | sed "s/-[^-]\{1,\}$//" ); grep -qs \
+"$package_name" "$HOME/.pkg_check.conf"; } then
 			move_cursor_up
 			echo -n "No package depends on $package, would you like to delete it? y/n "
 			while true; do
