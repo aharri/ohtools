@@ -3,7 +3,6 @@
 PROJS=\
 	baseup \
 	chroot_objects \
-	tempy \
 	check_errata \
 	hotplug \
 	dyndns \
@@ -36,12 +35,6 @@ baseup:
 chroot_objects:
 	@echo "Installing project specific files for $@"
 	${BSD_INSTALL_SCRIPT} $@/$@ ${DESTDIR}${PREFIX}/sbin/
-
-tempy:
-	@echo "Installing project specific files for $@"
-	${BSD_INSTALL_SCRIPT_DIR} ${DESTDIR}${PREFIX}/share/tempy
-	${BSD_INSTALL_SCRIPT} $@/plugins/tempy_*.sh ${DESTDIR}${PREFIX}/share/tempy/
-	${BSD_INSTALL_SCRIPT} $@/$@ ${DESTDIR}${PREFIX}/bin/
 
 check_errata:
 	@echo "Installing project specific files for $@"
