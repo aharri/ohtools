@@ -8,7 +8,6 @@ PROJS=\
 	dyndns \
 	pkgpurge \
 	mailtail
-#	mbox_pruner
 
 
 SYSCONFDIR=/etc
