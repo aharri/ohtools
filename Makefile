@@ -66,6 +66,6 @@ generic_install_routine:
 .for p in ${PROJS}
 	@echo "Installing documentation"
 	${BSD_INSTALL_DATA_DIR} ${DESTDIR}${PREFIX}/share/doc/$p
-	${BSD_INSTALL_DATA} $p/LICENSE ${DESTDIR}${PREFIX}/share/doc/$p/
+	${BSD_INSTALL_DATA} LICENSE ${DESTDIR}${PREFIX}/share/doc/$p/
 	-${BSD_INSTALL_DATA} $p/doc/* ${DESTDIR}${PREFIX}/share/doc/$p/
 .endfor
