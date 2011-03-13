@@ -1,0 +1,117 @@
+#!/bin/sh
+
+# Copyright (c) 2007,2009 Antti Harri <iku@openbsd.fi>
+
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+BASE=$(cd -- "$(dirname -- "$0")"; pwd)"/.."
+
+_usage()
+{
+	echo "${BASE}/bin/lightyctl start|stop|restart|test [domain]"
+}
+
+_start()
+{
+	echo "Processing config directory: ${BASE}/conf/"
+	for conf in ${BASE}/conf/master.conf ${BASE}/conf/vhost-*.conf; do
+		if [ -n "$domain" ]; then
+			echo "$conf" | fgrep -v -q "$domain" && continue
+		fi
+		lighttpd -t -f "$conf" 1>/dev/null
+		if [ "$?" ]; then
+			echo " Processing config file: $conf"
+			filename=$(basename "$conf")
+			instroot=$(egrep "^[[:space:]]*var.vhost-installpath" "$conf" | cut -f 2 -d '"' | tail -n 1)
+			su -c _web root -c "exec /usr/local/sbin/lighttpd-angel -f \"$conf\""
+			egrep -q "^[[:space:]]*fastcgi.server" "$conf" || continue
+			if [ -x "${instroot}/bin/spawn-php.sh" ]; then
+				${instroot}/bin/spawn-php.sh "${BASE}/run/fcgi-${filename}"
+			fi
+		fi
+	done
+
+	echo "${BASE}/bin/lightyctl: all configurations processed"
+}
+
+_reload()
+{
+	ret=0
+	for pidfile in ${BASE}/run/lighty-*; do
+		# this will fail if there aren't any files
+		if [ ! -e "$pidfile" ]; then break; fi
+		# if user supplied domain, match it or continue the loop
+		if [ -n "$domain" ]; then
+			echo "$pidfile" | fgrep -v -q "$domain" && continue
+		fi
+		xargs -r kill -SIGHUP < "$pidfile"
+	done
+}
+
+_test()
+{
+	retval2=0
+	echo "Processing config directory: ${BASE}/conf/"
+	for conf in ${BASE}/conf/master.conf ${BASE}/conf/vhost-*.conf; do
+		if [ -n "$domain" ]; then
+			echo "$conf" | fgrep -v -q "$domain" && continue
+		fi
+		result=$(lighttpd -t -f "$conf" 2>&1)
+		retval=$?
+		# Choose highest return value to indicate error when last
+		# one succeeds too
+		if [ "$retval" -gt "$retval2" ]; then
+			retval2=$retval
+		fi
+		name=$(basename "$conf")
+		echo " ${result}: $name"
+	done
+
+	echo "${BASE}/bin/lightyctl: all configurations processed"
+	exit "$retval2"
+}
+
+_stop ()
+{
+	ret=0
+	for pidfile in ${BASE}/run/*; do
+		# this will fail if there aren't any files
+		if [ ! -e "$pidfile" ]; then break; fi
+		# if user supplied domain, match it or continue the loop
+		if [ -n "$domain" ]; then
+			echo "$pidfile" | fgrep -v -q "$domain" && continue
+		fi
+		xargs -r kill < "$pidfile"
+	done
+	sleep 3
+
+	for pidfile in ${BASE}/run/*; do
+		# this will fail if there aren't any files
+		if [ ! -e "$pidfile" ]; then break; fi
+		# if user supplied domain, match it or continue the loop
+		if [ -n "$domain" ]; then
+			echo "$pidfile" | fgrep -v -q "$domain" && continue
+		fi
+		xargs -r ps -p 1>/dev/null 2>&1 < "$pidfile"
+		if [ "$?" -eq 0 ]; then
+			# PIDs found.
+			echo "processes remained: $(cat $pidfile)"
+			ret=1
+		else
+			rm -f "$pidfile"
+		fi
+	done
+	return "$ret"
+}
+
+if [ -n "$2" ]; then
+	domain=$2
+fi
+
+case "$1" in
+	"start") _start ;;
+	"restart") _stop && _start ;;
+	"reload") _reload ;;
+	"stop") _stop ;;
+	"test") _test ;;
+	*) _usage ;;
+esac

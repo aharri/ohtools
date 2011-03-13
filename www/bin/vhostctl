@@ -1,0 +1,197 @@
+#!/bin/sh
+
+# Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
+
+# Update specs (x marks NOT done):
+# - update all chroot related files and
+#   scripts from skeleton dir
+#
+# - copy required system binaries
+#
+# - dig up user & group
+# - update fastcgi spawner script
+#
+# - dig up docroot from lighty's conf
+# - update docroot in php.ini
+# - update docroot in fastcgi spawner
+# - update # of procs in fastcgi spawner
+#
+# - dig up modules used in php.ini
+# - copy module files from apache's dir
+#
+# - update module directories from system
+#   lib directories
+
+
+# module dir, it's should be pretty static
+APACHE_MODS=/var/www/lib/php/modules
+# logs can be removed once lighttpd's team has fixed the log issue
+CHOWNS="etc/ tmp/ logs/access_log logs/error_log"
+BASE=$(cd -- "$(dirname -- "$0")"; pwd)"/.."
+
+_usage()
+{
+	echo "${BASE}/bin/vhostctl update [domain]"
+	echo "${BASE}/bin/vhostctl add|remove domain"
+}
+
+if [ "$#" -lt 1 ]; then
+	_usage
+	exit
+fi
+
+DEBUG()
+{
+	echo "DEBUG: $1"
+#	sleep 1
+}
+_update()
+{
+	echo "Processing config directory: ${BASE}/conf/"
+	for conf in ${BASE}/conf/vhost-*.conf; do
+		if [ -n "$domain" ]; then
+			echo "$conf" | fgrep -v -q "$domain" && continue
+		fi
+		echo " Processing config file: $conf"
+
+		# Check for FastCGI, else continue
+		egrep -q "^[[:space:]]*fastcgi.server" "$conf" || continue
+
+		user=$(egrep "^[[:space:]]*server.username" "$conf" | cut -f 2 -d '"' | tail -n 1)
+		group=$(egrep "^[[:space:]]*server.groupname" "$conf" | cut -f 2 -d '"' | tail -n 1)
+		admin=$(egrep "^[[:space:]]*var.vhost-admin" "$conf" | cut -f 2 -d '"' | tail -n 1)
+		vhostgrp=$(egrep "^[[:space:]]*var.vhost-group" "$conf" | cut -f 2 -d '"' | tail -n 1)
+		chroot=$(egrep "^[[:space:]]*server.chroot" "$conf" | cut -f 2 -d '"' | tail -n 1)
+		docroot=$(egrep "^[[:space:]]*server.document-root" "$conf" | cut -f 2 -d '"' | tail -n 1)
+		instroot=$(egrep "^[[:space:]]*var.vhost-installpath" "$conf" | cut -f 2 -d '"' | tail -n 1)
+		fastcgiprocs=$(egrep "^[[:space:]]*var.fastcgi-procs" "$conf" | cut -f 2 -d '"' | tail -n 1)
+
+		# disaster preventer
+		if [ -z "$instroot" ]; then
+			DEBUG "instroot variable empty in $conf !"
+			continue
+		fi
+
+		if [ -z "$admin" ]; then
+			admin="root"
+		fi
+
+		DEBUG "installed in $instroot with docroot $docroot"
+
+		DEBUG "changing instroot's group and perm"
+		if [ -n "$vhostgrp" ]; then
+			chown "${admin}:${vhostgrp}" "$instroot"
+		else
+			chown "${admin}:${group}" "$instroot"
+		fi
+		chmod 750 "$instroot"
+
+		DEBUG "updating directory structure"
+		mtree -qef "${BASE}/skel/specs/fastcgi-vhost.spec" -p "${instroot}/" -U
+
+		DEBUG "chowning required files for httpd"
+		for f in $CHOWNS; do
+			# it isn't necessary to be chgrp'd too
+			#chown "${user}:${group}" "${instroot}/${f}"
+			chown "${user}:wheel" "${instroot}/${f}"
+		done
+
+		if [ -n "$chroot" ] && [ "$chroot" != "/" ]; then
+			DEBUG "removing stuff required in chroot: ${chroot}/usr"
+			sleep 3
+			rm -rf "${chroot}/usr"
+
+			DEBUG "copying system binaries"
+			cp -f /bin/sh "${chroot}/bin/"
+			cp -f /usr/local/bin/php-fastcgi "${chroot}/fastcgi/"
+		
+			DEBUG "updating their dependencies"
+			# sh is statically compiled
+			${BASE}/bin/chroot_objects "$chroot" "${chroot}/fastcgi/php-fastcgi"
+		fi
+
+
+		DEBUG "installing spawn-php.sh"
+		cp -f "${BASE}/skel/data/bin/spawn-php.sh" "${instroot}/bin/spawn-php.sh"
+
+		if [ ! -f "${instroot}/fastcgi/php.ini" ]; then
+			DEBUG "installing php.ini"
+			cp -f "${BASE}/skel/conf_samples/php.ini" "${instroot}/fastcgi/php.ini"
+		fi
+
+		if [ -f "${instroot}/fastcgi/php.ini" -a -f "${instroot}/bin/spawn-php.sh" ]; then
+			DEBUG "found php.ini and spawn-php.sh, now updating it"
+			# php.ini
+			perl -pi -e "s,^doc_root[[:space:]]*=.*$,doc_root = $docroot," "${instroot}/fastcgi/php.ini"
+			# spawn-php.sh (the variable names should probably be changed)
+			perl -pi -e "s,^USERID[[:space:]]*=.*$,USERID=$user," "${instroot}/bin/spawn-php.sh"
+			perl -pi -e "s,^GROUPID[[:space:]]*=.*$,GROUPID=$group," "${instroot}/bin/spawn-php.sh"
+			perl -pi -e "s,^WEBROOT[[:space:]]*=.*$,WEBROOT=$chroot," "${instroot}/bin/spawn-php.sh"
+			perl -pi -e "s,^PHP_FCGI_CHILDREN[[:space:]]*=.*$,PHP_FCGI_CHILDREN=$fastcgiprocs," "${instroot}/bin/spawn-php.sh"
+
+			if [ -n "$chroot" ]; then
+				DEBUG "Installing device nodes"
+				mkdir -p "${chroot}/dev"
+				(cd "${chroot}/dev" && /dev/MAKEDEV std)
+				perl -pi -e "s,^PHP_FCGI_SOCKET[[:space:]]*=.*$,PHP_FCGI_SOCKET=/tmp/php-fcgi.sock," "${instroot}/bin/spawn-php.sh"
+				perl -pi -e "s,^FCGIPROGRAM[[:space:]]*=.*$,FCGIPROGRAM=/fastcgi/php-fastcgi," "${instroot}/bin/spawn-php.sh"
+				perl -pi -e "s,^CONF_DIR[[:space:]]*=.*$,CONF_DIR=/fastcgi," "${instroot}/bin/spawn-php.sh"
+				#extroot=$(egrep "^[[:space:]]*extension_dir" "${instroot}/fastcgi/php.ini" | cut -f 2 -d '"')
+				extroot="/modules"
+				modules=$(grep "^extension=" ${instroot}/fastcgi/php.ini | cut -f 2 -d '=')
+
+				DEBUG "now updating extensions: ${chroot}/${extroot}/"
+				perl -pi -e "s,^extension_dir[[:space:]]*=.*$,extension_dir = $extroot," "${instroot}/fastcgi/php.ini"
+
+				if [ -n "$extroot" -a -n "$modules" ]; then
+					rm -f "${chroot}/${extroot}/"*
+					for module in $modules; do
+						cp -f "${APACHE_MODS}/${module}" "${chroot}/${extroot}/"
+						${BASE}/bin/chroot_objects "$chroot" "${chroot}/${extroot}/${module}"
+					done
+				fi
+			else
+				perl -pi -e "s,^PHP_FCGI_SOCKET[[:space:]]*=.*$,PHP_FCGI_SOCKET=${instroot}/tmp/php-fcgi.sock," "${instroot}/bin/spawn-php.sh"
+				perl -pi -e "s,^FCGIPROGRAM[[:space:]]*=.*$,FCGIPROGRAM=/usr/local/bin/php-fastcgi," "${instroot}/bin/spawn-php.sh"
+				perl -pi -e "s,^CONF_DIR[[:space:]]*=.*$,CONF_DIR=${instroot}/fastcgi," "${instroot}/bin/spawn-php.sh"
+				DEBUG "now updating extension directory: $APACHE_MODS"
+				perl -pi -e "s,^extension_dir[[:space:]]*=.*$,extension_dir = $APACHE_MODS," "${instroot}/fastcgi/php.ini"
+			fi
+		fi
+	done
+
+}
+
+_add()
+{
+	if [ -z "$domain" ]; then
+		_usage
+		exit 1
+	fi
+	${BASE}/bin/lightyctl test "$domain"
+	if [ "$?" -ne 0 ]; then
+		echo "Configure vhost first"
+		exit 1
+	fi
+	echo "Creating vhost called $domain"
+	sleep 3
+	cp -pr "${BASE}/skel/data/" "${BASE}/webdata/${domain}"
+	echo "Skeleton copied, now running update on it"
+	_update "$domain"
+}
+
+_remove()
+{
+	echo "not yet implemented!"
+}
+
+if [ -n "$2" ]; then
+	domain=$2
+fi
+
+case "$1" in
+	"update") _update ;;
+	"add") _add ;;
+	"remove") _remove ;;
+	*) _usage ;;
+esac
