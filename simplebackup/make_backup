@@ -43,7 +43,7 @@ deletetime="12"
 # backup to remote host?
 backup=0
 backup_flags="-B -C" # batch mode & compression
-backup_key="/backups/.id_dsa" # generate with ssh-keygen -t dsa
+backup_key="/backups/.id_rsa" # generate with ssh-keygen -t rsa
 backup_ruser="_backup@router"
 backup_rpath="server/"
 
