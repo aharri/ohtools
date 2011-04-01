@@ -1,5 +1,7 @@
 # Makefile for Openhosting's tools collection
 
+# Remember to bump the number inside openbsd-port/Makefile too.
+V=2.0
 PROJS=\
 	baseup \
 	chroot_objects \
@@ -9,6 +11,7 @@ PROJS=\
 	mailtail
 
 
+PORTSDIR?=/usr/ports
 SYSCONFDIR=/etc
 DESTDIR?=
 PREFIX?=/usr/local
@@ -62,3 +65,23 @@ generic_install_routine:
 	${BSD_INSTALL_DATA} LICENSE ${DESTDIR}${PREFIX}/share/doc/$p/
 	-${BSD_INSTALL_DATA} $p/doc/* ${DESTDIR}${PREFIX}/share/doc/$p/
 .endfor
+
+dist:
+	mkdir dist/
+
+dist/ohtools-${V}.tar.gz:
+	git archive --prefix=ohtools-"${V}"/ HEAD | gzip > dist/ohtools-"${V}".tar.gz
+
+distfile: dist dist/ohtools-${V}.tar.gz
+
+${PORTSDIR}/infrastructure:
+	@echo "You need to have ports directory. Refer to OpenBSD's documentation."
+	@exit 1
+
+package: ${PORTSDIR}/infrastructure distfile
+	if [ -e "${PORTSDIR}/mystuff/sysutils/ohtools.orig" ]; then \
+		(echo "${PORTSDIR}/mystuff/sysutils/ohtools.orig exists." && exit 1); fi
+	-mv "${PORTSDIR}/mystuff/sysutils/ohtools/" "${PORTSDIR}/mystuff/sysutils/ohtools.orig/"
+	cp -f dist/ohtools-${V}.tar.gz "${PORTSDIR}/distfiles/"
+	cp -r openbsd-port /usr/ports/mystuff/sysutils/ohtools"
+	cd /usr/ports/mystuff/sysutils/ohtools && make clean package

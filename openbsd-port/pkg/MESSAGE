@@ -1,0 +1,3 @@
+If you plan to use hotplug daemon's attach scripts, remember
+to edit configuration file: ${SYSCONFDIR}/hotplug/attach.conf
+ 

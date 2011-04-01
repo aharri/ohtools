@@ -4,3 +4,4 @@ zoner-dns/zoner-config.php
 zoner-dns/zoner-cookiefile
 zoner-dns/zoner-dns.db
 zoner-dns/ca/ca-bundle.crt
+dist/*

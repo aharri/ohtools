@@ -1,0 +1,30 @@
+@comment $OpenBSD$
+bin/check_errata
+bin/mailtail
+bin/pkgpurge
+sbin/baseup
+sbin/chroot_objects
+share/baseup/
+share/baseup/functions.sh
+share/doc/baseup/
+share/doc/baseup/LICENSE
+share/doc/check_errata/
+share/doc/check_errata/LICENSE
+share/doc/check_errata/README
+share/doc/chroot_objects/
+share/doc/chroot_objects/LICENSE
+share/doc/hotplug/
+share/doc/hotplug/LICENSE
+share/doc/hotplug/README
+share/doc/mailtail/
+share/doc/mailtail/LICENSE
+share/doc/pkgpurge/
+share/doc/pkgpurge/LICENSE
+share/examples/hotplug/
+share/examples/hotplug/attach
+@sample ${SYSCONFDIR}/hotplug/attach
+@exec chmod +x ${SYSCONFDIR}/hotplug/attach
+share/examples/hotplug/attach.conf
+@sample ${SYSCONFDIR}/hotplug/attach.conf
+share/hotplug/
+share/hotplug/attach.sh
