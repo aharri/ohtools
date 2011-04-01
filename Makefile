@@ -5,7 +5,6 @@ PROJS=\
 	chroot_objects \
 	check_errata \
 	hotplug \
-	dyndns \
 	pkgpurge \
 	mailtail
 
@@ -47,12 +46,6 @@ hotplug:
 	${BSD_INSTALL_SCRIPT} $@/attach ${DESTDIR}${PREFIX}/share/examples/hotplug/
 	${BSD_INSTALL_SCRIPT} $@/attach.conf ${DESTDIR}${PREFIX}/share/examples/hotplug/
 	perl -pi -e "s,^(OHTOOLS_INST_PREFIX=).*,\1${LOCALBASE}," ${DESTDIR}${PREFIX}/share/examples/hotplug/attach
-
-dyndns:
-	@echo "Installing project specific files for $@"
-	${BSD_INSTALL_SCRIPT} $@/$@ ${DESTDIR}${PREFIX}/bin/
-	${BSD_INSTALL_DATA_DIR} ${DESTDIR}${PREFIX}/share/examples/$@
-	${BSD_INSTALL_DATA} $@/etc/$@.conf ${DESTDIR}${PREFIX}/share/examples/$@/
 
 pkgpurge:
 	@echo "Installing project specific files for $@"
