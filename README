@@ -1,0 +1,8 @@
+Collection of tools aimed at OpenBSD users.
+
+Most commonly used include:
+- baseup: ease the installation of -current snapshots
+- hotplug: automatic photo extraction from digital cameras
+- pkgpurge: remove unwanted (leaf) packages
+- www: helper scripts to manage lighttpd+fastcgi chroots
+- zoner-dns: server side scripts to update Zoner DNS.
