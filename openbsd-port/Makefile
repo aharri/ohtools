@@ -1,10 +1,9 @@
 # $OpenBSD$
 
-V =		2.0
+V =		2.0.0
 COMMENT =	tools collection
 
 DISTNAME =	ohtools-${V}
-REVISION =	1
 CATEGORIES =	sysutils
 
 HOMEPAGE =	https://github.com/aharri/ohtools
