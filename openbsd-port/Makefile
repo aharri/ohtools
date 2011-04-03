@@ -4,7 +4,7 @@ V =		2.0
 COMMENT =	tools collection
 
 DISTNAME =	ohtools-${V}
-REVISION =	0
+REVISION =	1
 CATEGORIES =	sysutils
 
 HOMEPAGE =	https://github.com/aharri/ohtools
@@ -18,7 +18,8 @@ PERMIT_DISTFILES_FTP =		Yes
 # get the git repo and do make distfile.
 # MASTER_SITES =
 
-RUN_DEPENDS =	graphics/jhead
+RUN_DEPENDS =	net/curl \
+		graphics/jhead
 NO_BUILD =	Yes
 PKG_ARCH =	*
 DESTDIRNAME =
