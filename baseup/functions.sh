@@ -89,12 +89,12 @@ function fetch_files
 
 		check_sha256 "$file"
 		if [ "$?" -eq 0 ] && [ "$1" != '--nocomp' ]; then
-			printf "%-30s %s\n" "$file" "CACHED (sha256 checked)"
+			printf "%-12s %s\n" "$file" "CACHED (sha256 checked)"
 			continue
 		elif [ -e "${TEMPS}/$file" ] && [ "$1" != '--nocomp' ]; then
 			check_filesize "$file"
 			if [ "$?" -eq 0 ]; then
-				printf "%-30s %s\n" "$file" "CACHED (size checked)"
+				printf "%-12s %s\n" "$file" "CACHED (size checked)"
 				continue
 			fi
 		fi
@@ -105,9 +105,12 @@ function fetch_files
 				local src=$(echo "$source" | sed -e 's,^file://,,')
 				cmd=$(cp "${src}/${file}" "${TEMPS}/${file}" 1>/dev/null 2>&1)
 				code=$?
+				if [ "$code" -eq 0 ]; then
+					printf "%-12s %s\n" $file "GOOD"
+				fi
 			;;
 			ftp|http )
-				cmd=$(ftp -o "${TEMPS}/${file}" "${source}/${file}" 1>/dev/null 2>&1)
+				ftp -V -m -o "${TEMPS}/${file}" "${source}/${file}" 2>/dev/null
 				code=$?
 			;;
 			* )
@@ -115,10 +118,8 @@ function fetch_files
 				exit 1
 			;;
 		esac
-		if [ "$code" -eq 0 ]; then
-			printf "%-30s %s\n" $file "GOOD"
-		else 
-			printf "%-30s %s\n" $file "FAILED with code $code"
+		if [ "$code" -ne 0 ]; then
+			printf "%-12s %s\n" $file "FAILED with code $code"
 			if [ "$1" != '--nocheck' ]; then
 				exit 1
 			fi
@@ -157,9 +158,9 @@ function fetch_listing
 		;;
 	esac
 	if [ "$code" -eq 0 ]; then
-		printf "%-30s %s\n" "dirlisting" "GOOD"
+		printf "%-12s %s\n" "dirlisting" "GOOD"
 	else
-		printf "%-30s %s\n" "dirlisting" "FAILED with code $code"
+		printf "%-12s %s\n" "dirlisting" "FAILED with code $code"
 		# we need this file
 		set_config source ""
 		exit 1
