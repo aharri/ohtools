@@ -4,6 +4,7 @@ V =		2.0
 COMMENT =	tools collection
 
 DISTNAME =	ohtools-${V}
+REVISION =	0
 CATEGORIES =	sysutils
 
 HOMEPAGE =	https://github.com/aharri/ohtools
