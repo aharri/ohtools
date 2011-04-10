@@ -1,0 +1,65 @@
+# Base up
+
+The current way of upgrading OpenBSD is very
+simple itself but at least I feel that there's
+a need for a little shell script like this:
+- easy integrity checking for files
+- easier to manage multiple computers running OBSD
+
+I *STRONLY* encourage users to first learn how
+the system is upgraded the official way and then
+consider using this. It's also worth mentioning
+that *NEVER* do this as cron job, it might result
+in an unbootable system if there are some runtime
+errors. Baseup has pretty good error checking
+but there's always a chance for bug, more precise
+explanation on that below.
+
+# Requirements
+
+- Only net/curl from packages and nothing else
+  than base system of OpenBSD.
+- Enough storage space (~250M of temporary space)
+
+
+# Installing
+
+You can run baseup from anywhere on the disc,
+or use the port Makefile from ohtools to make
+a system wide installation.
+
+# How it works
+
+## Initialize
+
+1) Ask the user for the source of the tarballs.
+
+## Install, part 1
+
+1) Fetch directory indexes and SHA256
+2) Fetch kernel and base
+3) Install kernel
+
+It is recommended but *not mandatory* to reboot
+at this stage to get the new kernel started before
+extracting base system. There are some rare exceptions,
+meaning that sometimes you have to install kernel
+and extract base at the same time and sometimes you
+have to reboot in between. There is no way to be
+absolutely sure except reading and understanding
+every commit made after your last update. This
+is pretty much the only thing that go wrong with
+this kind of updating so you should be okay with
+this and prepared to fix whatever went wrong.
+
+All that said I always go for kernel+base without
+rebooting in between, works 99% of the time.
+
+## Install, part 2
+
+1) Base packages
+2) Sysmerge
+
+It is always recommended to sync your configuration
+files.
+
