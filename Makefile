@@ -79,9 +79,19 @@ ${PORTSDIR}/infrastructure:
 	@exit 1
 
 package: ${PORTSDIR}/infrastructure distfile
+	if [ ! -e "${PORTSDIR}/mystuff/sysutils" ]; then \
+		mkdir -p "${PORTSDIR}/mystuff/sysutils"; \
+	fi
 	if [ -e "${PORTSDIR}/mystuff/sysutils/ohtools.orig" ]; then \
-		(echo "${PORTSDIR}/mystuff/sysutils/ohtools.orig exists." && exit 1); fi
+		echo "${PORTSDIR}/mystuff/sysutils/ohtools.orig exists, removing it."; \
+		rm -rf "${PORTSDIR}/mystuff/sysutils/ohtools.orig"; \
+	fi
 	-mv "${PORTSDIR}/mystuff/sysutils/ohtools/" "${PORTSDIR}/mystuff/sysutils/ohtools.orig/"
 	cp -f dist/ohtools-${V}.tar.gz "${PORTSDIR}/distfiles/"
 	cp -r openbsd-port /usr/ports/mystuff/sysutils/ohtools"
-	cd /usr/ports/mystuff/sysutils/ohtools && make clean package
+	( \
+		cd /usr/ports/mystuff/sysutils/ohtools && \
+		make makesum && \
+		make repackage \
+	)
+
