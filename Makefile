@@ -92,6 +92,7 @@ package: ${PORTSDIR}/infrastructure distfile
 	( \
 		cd /usr/ports/mystuff/sysutils/ohtools && \
 		make makesum && \
+		make clean && \
 		make repackage \
 	)
 
