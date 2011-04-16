@@ -24,17 +24,6 @@ function check_sha256
 	(cd "${TEMPS}" && fgrep "($1)" SHA256 | cksum -a sha256 -c) 1>/dev/null 2>&1
 }
 
-function check_filesize
-{
-	local size1=$(egrep "${1}$" "${TEMPS}/dirlisting.txt" | awk '{ print $5 }')
-	local size2=$(ls -l "${TEMPS}/$1" 2>/dev/null | awk '{ print $5 }')
-
-	if [ "$size1" = "$size2" ]; then
-		return 0
-	fi
-	return 1
-}
-
 function touch_file
 {
 	if [ ! -e "$1" ]; then
@@ -91,12 +80,6 @@ function fetch_files
 		if [ "$?" -eq 0 ] && [ "$1" != '--nocomp' ]; then
 			printf "%-12s %s\n" "$file" "CACHED (sha256 checked)"
 			continue
-		elif [ -e "${TEMPS}/$file" ] && [ "$1" != '--nocomp' ]; then
-			check_filesize "$file"
-			if [ "$?" -eq 0 ]; then
-				printf "%-12s %s\n" "$file" "CACHED (size checked)"
-				continue
-			fi
 		fi
 		# XXX This might be nicer with user prompt
 		rm -f "${TEMPS}/${file}"
@@ -125,46 +108,6 @@ function fetch_files
 			fi
 		fi
 	done
-}
-
-function fetch_listing
-{
-	if [ -z "$1" ]; then
-		echo "fetch listing: not enough parameters"
-		exit
-	fi
-	case $(echo "$source" | cut -f 1 -d ':') in 
-		file )
-			local src=$(echo "$source" | sed -e 's,^file://,,')
-			/bin/ls -l "$src" > "$1" 2>/dev/null
-			code=$?	
-		;;
-		# http isn't tested
-		ftp|http )
-			which curl 1>/dev/null 2>/dev/null
-			if [ "$?" -ne 0 ]; then
-				echo "Curl not found, install it"
-				exit 1
-			fi
-
-			#get_config source
-			curl $CURL_OPTS "$source/" -o "$1"
-			# FIXME: curl doesn't return !0 when failure
-			code=$?
-		;;
-		* )
-			echo "Unsupported URL scheme $src"
-			exit 1
-		;;
-	esac
-	if [ "$code" -eq 0 ]; then
-		printf "%-12s %s\n" "dirlisting" "GOOD"
-	else
-		printf "%-12s %s\n" "dirlisting" "FAILED with code $code"
-		# we need this file
-		exit 1
-	fi
-	return 0
 }
 
 function init_source

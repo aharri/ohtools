@@ -1,6 +1,6 @@
 # $OpenBSD$
 
-V =		2.0.0
+V =		2.0.1
 COMMENT =	tools collection
 
 DISTNAME =	ohtools-${V}
@@ -17,8 +17,7 @@ PERMIT_DISTFILES_FTP =		Yes
 # get the git repo and do make distfile.
 # MASTER_SITES =
 
-RUN_DEPENDS =	net/curl \
-		graphics/jhead
+RUN_DEPENDS =	graphics/jhead
 NO_BUILD =	Yes
 PKG_ARCH =	*
 DESTDIRNAME =

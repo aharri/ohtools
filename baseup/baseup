@@ -59,9 +59,6 @@ case "$_VAL" in
 
 		# FILE FETCHING
 		# always needed files
-		echo "Getting file sizes (for x*.tgz)"
-		fetch_listing "${TEMPS}/dirlisting.txt"
-
 		echo "Fetch source $source."
 		echo "Fetching SHA256 sums and index."
 		fetch_files --nocomp SHA256 index.txt

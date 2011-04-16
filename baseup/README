@@ -17,8 +17,7 @@ explanation on that below.
 
 # Requirements
 
-- Only net/curl from packages and nothing else
-  than base system of OpenBSD.
+- Only base system of OpenBSD.
 - Enough storage space (~250M of temporary space)
 
 
