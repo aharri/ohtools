@@ -53,7 +53,7 @@ setup_tempdirs
 get_config state
 case "$_VAL" in
 	"install_kernel" ) # in the middle of fetching files
-		get_config source
+#		get_config source
 #		if [ "$_VAL" != "" ]; then
 #			# Clean from previous run.
 #			yesno "Wipe out files from previous run?"
