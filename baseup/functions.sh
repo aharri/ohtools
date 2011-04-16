@@ -162,7 +162,6 @@ function fetch_listing
 	else
 		printf "%-12s %s\n" "dirlisting" "FAILED with code $code"
 		# we need this file
-		set_config source ""
 		exit 1
 	fi
 	return 0
