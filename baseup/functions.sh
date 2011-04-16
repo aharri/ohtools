@@ -153,12 +153,14 @@ yesno()
 		fi
 		# junk holds the extra parameters yn holds the first parameters
 		read yn junk
+		# Convert to lowercase for comparison.
+		yn=$(printf "%s\n" "$yn" | tr "[:upper:]" "[:lower:]")
 		# check for difference cases
 		case $yn in
-			yes|Yes|YES|y|Y)
+			yes|y)
 				return 0
 				;;
-			no|No|n|N|NO)
+			no|n)
 				return 1
 				;;
 			"")
