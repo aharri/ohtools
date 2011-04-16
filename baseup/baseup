@@ -74,9 +74,8 @@ case "$_VAL" in
 
 		echo "Fetching new boot files and kernels."
 		fetch_files bsd.rd bsd
-		echo "Fetching architecture dependent files. Some may fail."
-		echo "Boot files will not be installed, update manually."
-		fetch_files --nocheck bsd.mp boot ofwboot
+		echo "Fetching SMP kernel, it may not exist for `uname -m`."
+		fetch_files --nocheck bsd.mp
 
 		# fetch only selected files
 		echo "Fetching base packages."
