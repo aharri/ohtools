@@ -15,17 +15,22 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 
-function usage
+usage()
 {
 	echo "Interactive OpenBSD base system upgrade tool."
 	echo ""
-	echo "Refer to file headers for appropriate copyright and legal notices"
-	echo "or check the packaging for license files."
+	echo "baseup [-hlpr]"
+	echo ""
+	echo " -h   print usage."
+	echo " -l   list available snapshots."
+	echo " -p   purge previous snapshot(s)."
+	echo " -r   revert to previous snapshot."
+	echo ""
 	exit 1
 }
 
 # Print given error and exit.
-function errx
+errx()
 {
 	mesg="Error, exiting."
 	if [ -n "$1" ]; then
@@ -36,27 +41,25 @@ function errx
 }
 
 # Set up temporary directories.
-function setup_tempdirs
+setup_tempdirs()
 {
 	# XXX: race condition
 	if [ ! -d "$TEMPS" ]; then
 	    mktemp -d "$TEMPS" 1>/dev/null 2>&1 || errx "Could not create '${TEMPS}'."
 	fi
 	SNAPDIR=$(date "+%Y-%m-%d-%H")
-	list_snaps
+	PREVSNAP=$(cd "$TEMPS" && find . -name "????-??-??-??" -type d | cut -f 2 -d '/' | sort -n | head -n 1)
 	if [ -z "${PREVSNAP}" ]; then
 		PREVSNAP=$SNAPDIR
 	fi
-	if [ "$SNAPDIR" != "$PREVSNAP" ]; then
-		if [ ! -d "${TEMPS}/${SNAPDIR}" ]; then
-			mktemp -d "${TEMPS}/${SNAPDIR}" 1>/dev/null 2>&1 || \
-				errx "Could not create '${TEMPS}/${SNAPDIR}'"
-		fi
+	if [ ! -d "${TEMPS}/${SNAPDIR}" ]; then
+		mktemp -d "${TEMPS}/${SNAPDIR}" 1>/dev/null 2>&1 || \
+			errx "Could not create '${TEMPS}/${SNAPDIR}'"
 	fi
 }
 
 # List snapshots.
-function list_snaps
+list_snaps()
 {
 	local snaps
 	local snaps2; snaps2=
@@ -64,15 +67,10 @@ function list_snaps
 	cd "$TEMPS"
 	snaps=$(find . -name "????-??-??-??" -type d | cut -f 2 -d '/' | sort -n)
 
-	PREVSNAP=
-	# Check for files.
-#		[ -f "${i}"/base??.tgz ] && \
-#		[ -f "${i}"/etc??.tgz ] && \
 	for i in $snaps; do
 		[ -f "${i}"/SHA256 ] && \
 		[ -f "${i}"/index.txt ] && \
-		snaps2="$i $snaps2" && \
-		PREVSNAP=$i
+		snaps2="$i $snaps2"
 	done
 	if [ -n "$snaps2" ]; then
 		echo "Found previous snapshots. Listing follows"
@@ -80,33 +78,22 @@ function list_snaps
 	fi
 }
 
-function query_index
+query_index()
 {
 	_VAL=$(cd "${TEMPS}/${SNAPDIR}" && egrep "(^|^.* )$1..\.tgz$" index.txt | perl -pe "s/(^|^.* )($1..\.tgz)$/\2/")
 }
 
 # $1 = directory with SHA256
 # $2 = what package to checksum
-function check_sha256
+check_sha256()
 {
 	(cd "$1" && fgrep "($2)" SHA256 | cksum -a sha256 -c) 1>/dev/null 2>&1
 }
 
-function touch_file
-{
-	if [ ! -e "$1" ]; then
-		touch "$1"
-		if [ "$?" -ne 0 ]; then
-			echo "Failed to create configuration file $1"
-			exit 1
-		fi
-	fi
-}
-
-function get_config
+get_config()
 {
 	# If configuration does not exist, create it
-	touch_file "$CONFIG"
+	touch "$CONFIG"
 
 	_VAL=$(egrep "^$1=" "$CONFIG")
 	ret=$?
@@ -117,12 +104,11 @@ function get_config
 	
 }
 
-function set_config
+set_config()
 {
 	# If configuration does not exist, create it
-	touch_file "$CONFIG"
-	get_config $1
-	if [ "$?" -ne "0" ]; then
+	touch "$CONFIG"
+	if ! get_config "$1"; then
 		echo "$1=$2" >> "$CONFIG"
 		return 0
 	fi
@@ -133,29 +119,24 @@ function set_config
 	return 0
 }
 
-function fetch_files
+fetch_files()
 {
+	local nocomp;  nocomp=false
+	local nocheck; nocheck=false
 	for file in $@; do
+		case "$file" in
+			'--nocomp')  nocomp=true;  continue;;
+			'--nocheck') nocheck=true; continue;;
+		esac
 
-		# skip parameter
-		# --nocomp   don't compare checksums
-		# --nocheck  don't check for succesful download
-		if [ "$file" = '--nocomp' ] || [ "$file" = '--nocheck' ]; then
-			continue
-		fi
-
-		if [ "$1" != '--nocomp' ]; then
-			check_sha256 "${TEMPS}/${SNAPDIR}" "$file"
-			if [ "$?" -eq 0 ]; then
-				printf "%-12s %s\n" "$file" "CACHED (sha256 checked)"
+		if [ "$nocomp" = false ]; then
+			check_sha256 "${TEMPS}/${SNAPDIR}" "$file" && \
+				printf "%-12s %s\n" "$file" "CACHED (sha256 checked)" && \
 				continue
-			fi
-			check_sha256 "${TEMPS}/${PREVSNAP}" "$file"
-			if [ "$?" -eq 0 ]; then
-				printf "%-12s %s\n" "$file" "CACHED (sha256 checked)"
-				(cd "${TEMPS}/${SNAPDIR}" && ln -s "../${PREVSNAP}/${file}")
+			check_sha256 "${TEMPS}/${PREVSNAP}" "$file" && \
+				printf "%-12s %s\n" "$file" "CACHED (sha256 checked)" && \
+				(cd "${TEMPS}/${SNAPDIR}" && ln -s "../${PREVSNAP}/${file}") && \
 				continue
-			fi
 		fi
 
 		# XXX This might be nicer with user prompt
@@ -170,34 +151,29 @@ function fetch_files
 				fi
 			;;
 			ftp|http )
-				ftp -V -m -o "${TEMPS}/${SNAPDIR}/${file}" "${source}/${file}" 2>/dev/null
+				ftp -V -m -o "${TEMPS}/${SNAPDIR}/${file}" "${source}/${file}" 2>/dev/null || :
 				code=$?
 			;;
 			* )
-				echo "Unsupported URL scheme $src"
-				exit 1
+				errx "Unsupported URL scheme $src"
 			;;
 		esac
 		if [ "$code" -ne 0 ]; then
 			printf "%-12s %s\n" $file "FAILED with code $code"
-			if [ "$1" != '--nocheck' ]; then
+			if [ "$nocheck" = false ]; then
 				exit 1
 			fi
 		fi
 	done
 }
 
-function init_source
+init_source()
 {
 	echo "What address shall I use as package source?"
 	echo "Here's an example: http://ftp.eu.openbsd.org/pub/OpenBSD/snapshots/`uname -m`"
 	echo "You can edit baseup.conf later if you get this wrong."
 	read source
 	set_config source "$source"
-	if [ "$?" -ne "0" ]; then
-		echo "Failed to set configuration."
-		exit 1
-	fi
 }
 
 # Yes/No function
@@ -211,7 +187,7 @@ yesno()
 	do
 		# $* read first every parameter giving to the yesno function which will be the message
 		echo -n "$1 "
-		if [ -n "$2" ] && [ "$2" = "n" ]; then
+		if [ -n "${2:-}" ] && [ "${2:-}" = "n" ]; then
 			default=1
 			echo -n "(y/N) "
 		else

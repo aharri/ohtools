@@ -15,8 +15,7 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 
-# XXX
-#set -eu
+set -eu
 
 VERBOSE=1
 BASE=$(cd -- "$(dirname -- "$0")"; pwd)
@@ -25,23 +24,19 @@ FUNCS="$BASE/functions.sh"
 TEMPS="$BASE/tmp"
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 
-if [ -n "${*:-}" ]; then
-	args=$(getopt h $*)
-	set -- $args
-	while [ $# -ge 0 ]; do
-		case "$1"
-		in
-			'-p') errx "Not implemented."; shift;;
-			'-r') errx "Not implemented."; shift;;
-			'-h') usage ; shift;;
-			'-?') usage ; shift;;
-			--) shift; break;;
-		esac
-	done
-fi
-
 # pick up functions
 . "$FUNCS"
+
+for param; do
+	case "$param" in
+		'-h') usage;;
+		'-l') list_snaps; exit 1;;
+		'-p') errx "Not implemented.";;
+		'-r') errx "Not implemented.";;
+		--) break;;
+	esac
+done
+unset param
 
 # check for first run
 get_config state || set_config state install_kernel
@@ -63,8 +58,8 @@ case "$_VAL" in
 #		fi
 
 		# SOURCE
-		get_config source
-		if [ "$?" -ne "0" ] || [ "$_VAL" = "" ]; then
+		get_config source || :
+		if [ "$?" -ne 0 ] || [ -z "$_VAL" ]; then
 			init_source
 		else
 			source=$_VAL
@@ -86,19 +81,13 @@ case "$_VAL" in
 		PKGS="base etc comp game man xbase xetc xfont xserv xshare"
 
 		for pkg in $PKGS; do
-			get_config $pkg
-			if [ "$?" -ne "0" ]; then
-				yesno "Do you wish to add \"$pkg\" to the list of packages to be installed?"
-				if [ "$?" -eq 0 ]; then
+			if ! get_config "$pkg"; then
+				if yesno "Do you wish to add \"$pkg\" to the list of packages to be installed?"; then
 					ans=yes
 				else
 					ans=no
 				fi
 				set_config $pkg $ans
-				if [ "$?" -ne 0 ]; then
-					echo "Failed to set configuration."
-					exit 1
-				fi
 			elif [ "$_VAL" = "yes" ] || [ "$_VAL" = "no" ]; then
 				ans=$_VAL
 			fi
@@ -121,15 +110,10 @@ case "$_VAL" in
 
 		echo "Kernel(s) installed"
 
-		get_config "disabled_drivers"
-		if [ "$?" -ne "0" ]; then
+		if ! get_config "disabled_drivers"; then
 			echo -n "List of drivers to be disabled? (Usually empty) "
 			read ans
 			set_config "disabled_drivers" "$ans"
-			if [ "$?" -ne "0" ]; then
-				echo "Failed to set configuration."
-				exit 1
-			fi
 		else
 			ans=$_VAL
 		fi
@@ -143,32 +127,30 @@ case "$_VAL" in
 			printf "$disabled_drivers" | config -ef /bsd.mp
 		fi
 
-		echo "New config state written, reboot and re-run this script after reboot"
+		echo "Next launch will unpack base packages."
+		echo "You can reboot before that, but it is not always needed."
 		set_config state install_base
 	;;
 	"install_base" )
 		# install the base packages
 		yesno "About to install base packages, are you sure?" n
-		if [ "$?" -eq 1 ]; then
-			exit 1
-		fi
 
 		local sysmerge_cmd=
 		for pkg in "${TEMPS}/${SNAPDIR}/"*.tgz; do
-			echo "$pkg" | egrep -q "/etc..\.tgz$"
-			if [ "$?" -eq 0 ]; then
-				sysmerge_cmd="$sysmerge_cmd -s $pkg"
-				echo "Skipping ${pkg}: merge with sysmerge!"
-				continue
-			fi
-			echo "$pkg" | egrep -q "/xetc..\.tgz$"
-			if [ "$?" -eq 0 ]; then
-				sysmerge_cmd="$sysmerge_cmd -x $pkg"
-				echo "Skipping ${pkg}: merge with sysmerge!"
-				continue
-			fi
+			case "$pkg" in
+				*/etc[0-9][0-9].tgz)
+					sysmerge_cmd="$sysmerge_cmd -s $pkg"
+					echo "Skipping ${pkg}: merge with sysmerge!"
+					continue
+				;;
+				*/xetc[0-9][0-9].tgz)
+					sysmerge_cmd="$sysmerge_cmd -x $pkg"
+					echo "Skipping ${pkg}: merge with sysmerge!"
+					continue
+				;;
+			esac
 			echo "Installing $pkg"
-			(cd / && tar zxfp "$pkg") || break
+			#(cd / && tar zxfp "$pkg") || break
 		done
 
 		echo "Base installed."
