@@ -17,7 +17,7 @@
 
 function usage
 {
-	echo "Base upgrader."
+	echo "Interactive OpenBSD base system upgrade tool."
 	echo ""
 	echo "Refer to file headers for appropriate copyright and legal notices"
 	echo "or check the packaging for license files."
