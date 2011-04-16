@@ -15,6 +15,9 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 
+# XXX
+#set -eu
+
 VERBOSE=1
 BASE=$(cd -- "$(dirname -- "$0")"; pwd)
 CONFIG="${BASE}/.config"
@@ -22,16 +25,20 @@ FUNCS="$BASE/functions.sh"
 TEMPS="$BASE/tmp"
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 
-args=$(getopt h $*)
-set -- $args
-while [ $# -ge 0 ]; do
-	case "$1"
-	in
-		'-h') usage ; shift;;
-		'-?') usage ; shift;;
-		--) shift; break;;
-	esac
-done
+if [ -n "${*:-}" ]; then
+	args=$(getopt h $*)
+	set -- $args
+	while [ $# -ge 0 ]; do
+		case "$1"
+		in
+			'-p') errx "Not implemented."; shift;;
+			'-r') errx "Not implemented."; shift;;
+			'-h') usage ; shift;;
+			'-?') usage ; shift;;
+			--) shift; break;;
+		esac
+	done
+fi
 
 # pick up functions
 . "$FUNCS"
@@ -39,24 +46,21 @@ done
 # check for first run
 get_config state || set_config state install_kernel
 
-# set up temp directory if it doesn't exist
-if [ ! -d "$TEMPS" ]; then
-	# just mkdir it, we don't have anything secrets to store
-	mkdir -p "$TEMPS" 
-fi
+# Set up temp directories if they don't exist.
+setup_tempdirs
 
 # main
 get_config state
 case "$_VAL" in
 	"install_kernel" ) # in the middle of fetching files
 		get_config source
-		if [ "$_VAL" != "" ]; then
-			# Clean from previous run.
-			yesno "Wipe out files from previous run?"
-			if [ "$?" -eq 0 ]; then
-				rm -f "${TEMPS}/"*.tgz "${TEMPS}/"bsd* "${TEMPS}/"*boot*
-			fi
-		fi
+#		if [ "$_VAL" != "" ]; then
+#			# Clean from previous run.
+#			yesno "Wipe out files from previous run?"
+#			if [ "$?" -eq 0 ]; then
+#				rm -f "${TEMPS}/"*.tgz "${TEMPS}/"bsd* "${TEMPS}/"*boot*
+#			fi
+#		fi
 
 		# SOURCE
 		get_config source
@@ -113,7 +117,7 @@ case "$_VAL" in
 		fi
 
 		cp -f /bsd /bsd.orig
-		cp -f "${TEMPS}/"bsd* /
+		cp -f "${TEMPS}/${SNAPDIR}/"bsd* /
 
 		echo "Kernel(s) installed"
 
@@ -150,7 +154,7 @@ case "$_VAL" in
 		fi
 
 		local sysmerge_cmd=
-		for pkg in "${TEMPS}/"*.tgz; do
+		for pkg in "${TEMPS}/${SNAPDIR}/"*.tgz; do
 			echo "$pkg" | egrep -q "/etc..\.tgz$"
 			if [ "$?" -eq 0 ]; then
 				sysmerge_cmd="$sysmerge_cmd -s $pkg"

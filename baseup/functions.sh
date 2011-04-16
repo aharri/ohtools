@@ -24,14 +24,72 @@ function usage
 	exit 1
 }
 
-function query_index
+# Print given error and exit.
+function errx
 {
-	_VAL=$(cd "${TEMPS}" && egrep "(^|^.* )$1..\.tgz$" index.txt | perl -pe "s/(^|^.* )($1..\.tgz)$/\2/")
+	mesg="Error, exiting."
+	if [ -n "$1" ]; then
+		mesg=$1
+	fi
+	printf "%s\n" "$mesg"
+	exit 1
 }
 
+# Set up temporary directories.
+function setup_tempdirs
+{
+	# XXX: race condition
+	if [ ! -d "$TEMPS" ]; then
+	    mktemp -d "$TEMPS" 1>/dev/null 2>&1 || errx "Could not create '${TEMPS}'."
+	fi
+	SNAPDIR=$(date "+%Y-%m-%d-%H")
+	list_snaps
+	if [ -z "${PREVSNAP}" ]; then
+		PREVSNAP=$SNAPDIR
+	fi
+	if [ "$SNAPDIR" != "$PREVSNAP" ]; then
+		if [ ! -d "${TEMPS}/${SNAPDIR}" ]; then
+			mktemp -d "${TEMPS}/${SNAPDIR}" 1>/dev/null 2>&1 || \
+				errx "Could not create '${TEMPS}/${SNAPDIR}'"
+		fi
+	fi
+}
+
+# List snapshots.
+function list_snaps
+{
+	local snaps
+	local snaps2; snaps2=
+
+	cd "$TEMPS"
+	snaps=$(find . -name "????-??-??-??" -type d | cut -f 2 -d '/' | sort -n)
+
+	PREVSNAP=
+	# Check for files.
+#		[ -f "${i}"/base??.tgz ] && \
+#		[ -f "${i}"/etc??.tgz ] && \
+	for i in $snaps; do
+		[ -f "${i}"/SHA256 ] && \
+		[ -f "${i}"/index.txt ] && \
+		snaps2="$i $snaps2" && \
+		PREVSNAP=$i
+	done
+	if [ -n "$snaps2" ]; then
+		echo "Found previous snapshots. Listing follows"
+		printf "\n%s\n\n" "$snaps2" | fmt -w 1
+	fi
+}
+
+function query_index
+{
+	_VAL=$(cd "${TEMPS}/${SNAPDIR}" && egrep "(^|^.* )$1..\.tgz$" index.txt | perl -pe "s/(^|^.* )($1..\.tgz)$/\2/")
+}
+
+# $1 = directory with SHA256
+# $2 = what package to checksum
 function check_sha256
 {
-	(cd "${TEMPS}" && fgrep "($1)" SHA256 | cksum -a sha256 -c) 1>/dev/null 2>&1
+	(cd "$1" && fgrep "($2)" SHA256 | cksum -a sha256 -c) 1>/dev/null 2>&1
 }
 
 function touch_file
@@ -86,24 +144,33 @@ function fetch_files
 			continue
 		fi
 
-		check_sha256 "$file"
-		if [ "$?" -eq 0 ] && [ "$1" != '--nocomp' ]; then
-			printf "%-12s %s\n" "$file" "CACHED (sha256 checked)"
-			continue
+		if [ "$1" != '--nocomp' ]; then
+			check_sha256 "${TEMPS}/${SNAPDIR}" "$file"
+			if [ "$?" -eq 0 ]; then
+				printf "%-12s %s\n" "$file" "CACHED (sha256 checked)"
+				continue
+			fi
+			check_sha256 "${TEMPS}/${PREVSNAP}" "$file"
+			if [ "$?" -eq 0 ]; then
+				printf "%-12s %s\n" "$file" "CACHED (sha256 checked)"
+				(cd "${TEMPS}/${SNAPDIR}" && ln -s "../${PREVSNAP}/${file}")
+				continue
+			fi
 		fi
+
 		# XXX This might be nicer with user prompt
-		rm -f "${TEMPS}/${file}"
+		rm -f "${TEMPS}/${SNAPDIR}/${file}"
 		case $(echo "$source" | cut -f 1 -d ':') in 
 			file )
 				local src=$(echo "$source" | sed -e 's,^file://,,')
-				cmd=$(cp "${src}/${file}" "${TEMPS}/${file}" 1>/dev/null 2>&1)
+				cmd=$(cp "${src}/${file}" "${TEMPS}/${SNAPDIR}/${file}" 1>/dev/null 2>&1)
 				code=$?
 				if [ "$code" -eq 0 ]; then
 					printf "%-12s %s\n" $file "GOOD"
 				fi
 			;;
 			ftp|http )
-				ftp -V -m -o "${TEMPS}/${file}" "${source}/${file}" 2>/dev/null
+				ftp -V -m -o "${TEMPS}/${SNAPDIR}/${file}" "${source}/${file}" 2>/dev/null
 				code=$?
 			;;
 			* )
