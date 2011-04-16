@@ -96,3 +96,5 @@ package: ${PORTSDIR}/infrastructure distfile
 		make repackage \
 	)
 
+update: package
+	cd "${PORTSDIR}/mystuff/sysutils/ohtools" && make reinstall
