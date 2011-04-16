@@ -6,7 +6,6 @@
 #
 
 VERBOSE=1
-CURL_OPTS="-s"
 BASE=$(cd -- "$(dirname -- "$0")"; pwd)
 CONFIG="${BASE}/.config"
 FUNCS="$BASE/functions.sh"
