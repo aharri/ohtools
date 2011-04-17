@@ -43,12 +43,14 @@ errx()
 # Set up temporary directories.
 setup_tempdirs()
 {
+	local snaps
 	# XXX: race condition
 	if [ ! -d "$TEMPS" ]; then
 	    mktemp -d "$TEMPS" 1>/dev/null 2>&1 || errx "Could not create '${TEMPS}'."
 	fi
 	SNAPDIR=$(date "+%Y-%m-%d-%H")
-	PREVSNAP=$(cd "$TEMPS" && find . -name "????-??-??-??" -type d | cut -f 2 -d '/' | sort -n | head -n 1)
+	snaps=$(get_snaps)
+	PREVSNAP=$(printf "%s\n" "$snaps" | head -n 1)
 	if [ -z "${PREVSNAP}" ]; then
 		PREVSNAP=$SNAPDIR
 	fi
@@ -58,8 +60,7 @@ setup_tempdirs()
 	fi
 }
 
-# List snapshots.
-list_snaps()
+get_snaps()
 {
 	local snaps
 	local snaps2; snaps2=
@@ -72,10 +73,20 @@ list_snaps()
 		[ -f "${i}"/index.txt ] && \
 		snaps2="$i $snaps2"
 	done
-	if [ -n "$snaps2" ]; then
-		echo "Found previous snapshots. Listing follows"
-		printf "\n%s\n\n" "$snaps2" | fmt -w 1
+	printf "%s\n" "$snaps2" | fmt -w 1
+}
+# List snapshots.
+list_snaps()
+{
+	local snaps
+
+	snaps=$(get_snaps)
+
+	if [ -z "$snaps" ]; then
+		snaps="None found."
 	fi
+	echo "Listing previously fetched snapshots:"
+	printf "\n%s\n\n" "$snaps" | fmt -w 1
 }
 
 query_index()
