@@ -150,7 +150,7 @@ case "$_VAL" in
 				;;
 			esac
 			echo "Installing $pkg"
-			#(cd / && tar zxfp "$pkg") || break
+			(cd / && tar zxfp "$pkg") || break
 		done
 
 		echo "Base installed."
