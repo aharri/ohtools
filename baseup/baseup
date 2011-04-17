@@ -21,33 +21,40 @@ VERBOSE=1
 BASE=$(cd -- "$(dirname -- "$0")"; pwd)
 CONFIG="${BASE}/.config"
 FUNCS="$BASE/functions.sh"
+INSTALL_SUB="$BASE/openbsd-install.sub"
 TEMPS="$BASE/tmp"
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 
 # pick up functions
 . "$FUNCS"
+. "$INSTALL_SUB"
 
+action=
 for param; do
 	case "$param" in
-		'-h') usage;;
-		'-l') list_snaps; exit 1;;
-		'-p') errx "Not implemented.";;
-		'-r') errx "Not implemented.";;
-		--) break;;
+	'-h') usage;;
+	'-l') list_snaps; exit 1;;
+	'-r') action=revert;;
+	'-t') action=trim;;
+	--) break;;
 	esac
 done
 unset param
 
-# check for first run
-get_config state || set_config state install_kernel
+touch "$CONFIG"
 
+# check for first run
+get_config state 1>/dev/null || set_config state install_kernel
+if [ -z "$action" ]; then
+	action=$(get_config state)
+fi
+	
 # Set up temp directories if they don't exist.
 setup_tempdirs
 
-# main
-get_config state
-case "$_VAL" in
-	"install_kernel" ) # in the middle of fetching files
+case "$action" in
+trim)
+	errx "Not implemented."
 #		get_config source
 #		if [ "$_VAL" != "" ]; then
 #			# Clean from previous run.
@@ -56,113 +63,130 @@ case "$_VAL" in
 #				rm -f "${TEMPS}/"*.tgz "${TEMPS}/"bsd* "${TEMPS}/"*boot*
 #			fi
 #		fi
+	break
+;;
+revert)
+	snaps=$(get_snaps)
+	if [ -z "$snaps" ]; then
+		errx "Cannot revert, no snapshots found."
+	fi
+	echo "Found the following snaps:\n"
+	count=1
+	for i in $snaps; do
+		printf "[%s] %s\n" "$count" "$i"
+		count=$((count + 1))
+	done
+	# Second newest entry.
+	default=$(printf "%s\n" "$snaps" | head -n 2 | tail -n 1)
+	while :; do
+		openbsd_ask_until "Which one?" "$default"
+		case "$resp" in
+		'done') errx "No snapshot selected.";;
+		"?") 
+			count=1
+			for i in $snaps; do
+				printf "[%s] %s\n" "$count" "$i"
+				count=$((count + 1))
+			done
+		;;
+		+([0-9]))
+			set -- $(printf "%s\n" "$snaps" | sed -n "${resp}p")
+			[[ $# -lt 1 ]] && { echo "There is no line $resp." ; continue ; }
+			revert=$1
+			break
+		;;
+		20[1-9][0-9]-[0-1][0-9]-[0-3][0-9]-[0-9][0-9])
+			revert=$resp
+			break
+		;;
+		*)
+			echo "'$resp' is not a valid timestamp."
+		;;
+		esac
+	done
+	echo "Reverting to '$revert'."
+	install_kernel "$revert"
+	install_tgz --sysmerge=auto "$revert"
+;;
+install_kernel)
+	# SOURCE
+	_VAL=$(get_config source || :)
+	if [ "$?" -ne 0 ] || [ -z "$_VAL" ]; then
+		init_source
+	else
+		source=$_VAL
+	fi
 
-		# SOURCE
-		get_config source || :
-		if [ "$?" -ne 0 ] || [ -z "$_VAL" ]; then
-			init_source
-		else
-			source=$_VAL
-		fi
+	# FILE FETCHING
+	# always needed files
+	echo "Fetch source $source."
+	echo "Fetching SHA256 sums and index."
+	fetch_files --nocomp SHA256 index.txt
 
-		# FILE FETCHING
-		# always needed files
-		echo "Fetch source $source."
-		echo "Fetching SHA256 sums and index."
-		fetch_files --nocomp SHA256 index.txt
+	echo "Fetching new boot files and kernels."
+	fetch_files bsd.rd bsd
+	echo "Fetching SMP kernel, it may not exist for `uname -m`."
+	fetch_files --nocheck bsd.mp
 
-		echo "Fetching new boot files and kernels."
-		fetch_files bsd.rd bsd
-		echo "Fetching SMP kernel, it may not exist for `uname -m`."
-		fetch_files --nocheck bsd.mp
+	# fetch only selected files
+	echo "Fetching base packages."
+	PKGS="base etc comp game man xbase xetc xfont xserv xshare"
 
-		# fetch only selected files
-		echo "Fetching base packages."
-		PKGS="base etc comp game man xbase xetc xfont xserv xshare"
-
-		for pkg in $PKGS; do
-			if ! get_config "$pkg"; then
-				if yesno "Do you wish to add \"$pkg\" to the list of packages to be installed?"; then
-					ans=yes
-				else
-					ans=no
-				fi
-				set_config $pkg $ans
-			elif [ "$_VAL" = "yes" ] || [ "$_VAL" = "no" ]; then
-				ans=$_VAL
+	for pkg in $PKGS; do
+		if ! _VAL=$(get_config "$pkg"); then
+			if yesno "Do you wish to add \"$pkg\" to the list of packages to be installed?"; then
+				ans=yes
+			else
+				ans=no
 			fi
-
-			# Fetch it
-			if [ "$ans" != "no" ]; then
-				query_index $pkg
-				fetch_files $_VAL
-			fi
-		done
-
-		# now install kernels
-		yesno "About to install kernels, are you sure?" n
-		if [ "$?" -eq 1 ]; then
-			exit 1
-		fi
-
-		cp -f /bsd /bsd.orig
-		cp -f "${TEMPS}/${SNAPDIR}/"bsd* /
-
-		echo "Kernel(s) installed"
-
-		if ! get_config "disabled_drivers"; then
-			echo -n "List of drivers to be disabled? (Usually empty) "
-			read ans
-			set_config "disabled_drivers" "$ans"
-		else
+			set_config $pkg $ans
+		elif [ "$_VAL" = "yes" ] || [ "$_VAL" = "no" ]; then
 			ans=$_VAL
 		fi
 
-		if [ -n "$ans" ]; then
-			for disabled_driver in $ans; do
-				disabled_drivers="${disabled_drivers}disable ${disabled_driver}\n"
-			done
-			disabled_drivers="${disabled_drivers}\nquit\n"
-			printf "$disabled_drivers" | config -ef /bsd
-			printf "$disabled_drivers" | config -ef /bsd.mp
+		# Fetch it
+		if [ "$ans" != "no" ]; then
+			query_index $pkg
+			fetch_files $_VAL
 		fi
+	done
 
-		echo "Next launch will unpack base packages."
-		echo "You can reboot before that, but it is not always needed."
-		set_config state install_base
-	;;
-	"install_base" )
-		# install the base packages
-		yesno "About to install base packages, are you sure?" n
+	# now install kernels
+	yesno "About to install kernels, are you sure?" n
+	if [ "$?" -eq 1 ]; then
+		exit 1
+	fi
 
-		local sysmerge_cmd=
-		for pkg in "${TEMPS}/${SNAPDIR}/"*.tgz; do
-			case "$pkg" in
-				*/etc[0-9][0-9].tgz)
-					sysmerge_cmd="$sysmerge_cmd -s $pkg"
-					echo "Skipping ${pkg}: merge with sysmerge!"
-					continue
-				;;
-				*/xetc[0-9][0-9].tgz)
-					sysmerge_cmd="$sysmerge_cmd -x $pkg"
-					echo "Skipping ${pkg}: merge with sysmerge!"
-					continue
-				;;
-			esac
-			echo "Installing $pkg"
-			(cd / && tar zxfp "$pkg") || break
+	install_kernel "${SNAPDIR}"
+
+	if ! _VAL=$(get_config "disabled_drivers"); then
+		echo -n "List of drivers to be disabled? (Usually empty) "
+		read ans
+		set_config "disabled_drivers" "$ans"
+	else
+		ans=$_VAL
+	fi
+
+	if [ -n "$ans" ]; then
+		for disabled_driver in $ans; do
+			disabled_drivers="${disabled_drivers}disable ${disabled_driver}\n"
 		done
+		disabled_drivers="${disabled_drivers}\nquit\n"
+		printf "$disabled_drivers" | config -ef /bsd
+		printf "$disabled_drivers" | config -ef /bsd.mp
+	fi
 
-		echo "Base installed."
-
-		set_config state install_kernel
-
-		if [ -n "$sysmerge_cmd" ]; then
-			yesno "Run sysmerge (recommended)?"
-			if [ "$?" -eq 0 ]; then
-				sysmerge $sysmerge_cmd
-			fi
-		fi
-
-	;;
+	echo ""
+	echo "Next launch will extract base packages. You can"
+	echo "reboot before that, but it is not always needed."
+	echo ""
+	set_config state install_base
+;;
+install_base)
+	# install the base packages
+	yesno "About to install base packages, are you sure?" n
+	install_tgz --sysmerge=ask
+;;
+*) errx "Unknown configuration state '$action'."; break ;;
 esac
+

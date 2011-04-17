@@ -1,0 +1,236 @@
+#	$OpenBSD: src/distrib/miniroot/install.sub,v 1.636 2011/03/22 19:20:15 krw Exp $
+#	$NetBSD: install.sub,v 1.5.2.8 1996/09/02 23:25:02 pk Exp $
+#
+# Copyright (c) 1997-2009 Todd Miller, Theo de Raadt, Ken Westerback
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+# NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# Copyright (c) 1996 The NetBSD Foundation, Inc.
+# All rights reserved.
+#
+# This code is derived from software contributed to The NetBSD Foundation
+# by Jason R. Thorpe.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+# ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+# TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+
+# OpenBSD install/upgrade script common subroutines and initialization code
+
+# Issue a read into the global variable $resp. If the dmesg output is
+# changed while inside this function, the current read will be aborted
+# and the function will return a non-zero value. Normally, the caller
+# will then reprint any prompt and call the function again.
+openbsd__ask() {
+	local _int _redo=0
+
+# 	trap "_int=1" INT
+# 	trap "_redo=1" TERM
+#	lock; dmesg >/tmp/update; unlock
+	read resp
+#	lock; rm /tmp/update; unlock
+# 	if (( _redo )); then
+# 		stty raw
+# 		stty -raw
+#	else
+#		case $resp in
+#		!)	echo "Type 'exit' to return to install."
+#			sh
+#			_redo=1
+#			;;
+#		!*)	eval "${resp#?}"
+#			_redo=1
+#			;;
+#		esac
+# 	fi
+#	retrap
+# 	(( _int )) && kill -INT $$
+	return $_redo
+}
+
+# Ask for user input.
+#
+#    $1    = the question to ask the user
+#    $2    = the default answer
+#
+# Save the user input (or the default) in $resp.
+#
+# Allow the user to escape to shells ('!') or execute commands
+# ('!foo') before entering the input.
+openbsd_ask() {
+	local _question=$1 _default=$2
+
+	while :; do
+		echo -n "$_question "
+		[[ -z $_default ]] || echo -n "[$_default] "
+		openbsd__ask && : ${resp:=$_default} && break
+	done
+}
+
+
+# Ask for user input until a non-empty reply is entered.
+#
+#    $1    = the question to ask the user
+#    $2    = the default answer
+#
+# Save the user input (or the default) in $resp.
+openbsd_ask_until() {
+	resp=
+	while [[ -z $resp ]] ; do
+		openbsd_ask "$1" "$2"
+	done
+}
+
+# # Ask the user for a y or n, and insist on 'y', 'yes', 'n' or 'no'.
+# #
+# #    $1    = the question to ask the user
+# #    $2    = the default answer (assumed to be 'n' if empty).
+# #
+# # Return 'y' or 'n' in $resp.
+# ask_yn() {
+# 	local _q=$1 _a=${2:-no} _resp
+# 	typeset -l _resp
+# 
+# 	while :; do
+# 		ask "$_q" "$_a"
+# 		_resp=$resp
+# 		case $_resp in
+# 		y|yes)	resp=y ; return ;;
+# 		n|no)	resp=n ; return ;;
+# 		esac
+# 	done
+# }
+
+# Ask for the user to select one value from a list, or 'done'.
+#
+# $1 = name of the list items (disk, cd, etc.)
+# $2 = question to ask
+# $3 = list of valid choices
+# $4 = default choice, if it is not specified use the first item in $3
+#
+# N.B.! $3 and $4 will be "expanded" using eval, so be sure to escape them
+#       if they contain spooky stuff
+#
+# At exit $resp holds selected item, or 'done'
+openbsd_ask_which() {
+	local _name=$1 _query=$2 _list=$3 _def=$4 _dynlist _dyndef
+
+	while :; do
+		# Put both lines in ask prompt, rather than use a
+		# separate 'echo' to ensure the entire question is
+		# re-ask'ed after a '!' or '!foo' shell escape.
+		eval "_dynlist=\"$_list\""
+		eval "_dyndef=\"$_def\""
+
+		# Clean away whitespace and determine the default
+		set -o noglob
+		set -- $_dyndef; _dyndef="$1"
+		set -- $_dynlist; _dynlist="$*"
+		set +o noglob
+		(( $# < 1 )) && resp=done && return
+
+		: ${_dyndef:=$1}
+		echo "Available ${_name}s are: $_dynlist."
+		echo -n "Which one $_query? (or 'done') "
+		[[ -n $_dyndef ]] && echo -n "[$_dyndef] "
+		openbsd__ask || continue
+		[[ -z $resp ]] && resp="$_dyndef"
+
+		# Quote $resp to prevent user from confusing isin() by
+		# entering something like 'a a'.
+		isin "$resp" $_dynlist done && break
+		echo "'$resp' is not a valid choice."
+	done
+}
+
+# test the first argument against the remaining ones, return success on a match
+openbsd_isin() {
+	local	_a=$1 _b
+
+	shift
+	for _b; do
+		[[ $_a == $_b ]] && return 0
+	done
+	return 1
+}
+
+# # show a list (passed via ordered arguments) in column output using ls
+# showcols() {
+# 	local _l _cdir=/tmp/cdir
+# 	set -A _clist
+# 	mkdir -p $_cdir
+# 	rm -rf -- $_cdir/*
+# 	while read _l; do
+# 		[ "$_l" ] || continue
+# 		mkdir -p /tmp/cdir/"$_l"
+# 		_clist[${#_clist[*]}]="$_l"
+# 	done
+# 	(cd $_cdir; ls -Cdf "${_clist[@]}")
+# 	rm -rf -- $_cdir
+# }
+
+
+# 	# Get server IP address or hostname
+# 	while :; do
+# 		ask_until "$_prompt" "$_server_ip"
+# 		case $resp in
+# 		done)	return ;;
+# 		"?")	[[ -s $SERVERLIST ]] || continue
+# 			less -XEN < $SERVERLIST
+# 			;;
+# 		+([0-9]))
+# 			# A numeric hostname is ignored. A number is only used
+# 			# as a line number in $SERVERLIST.
+# 			[[ -s $SERVERLIST ]] || continue
+# 			set -- $(sed -n "${resp}p" $SERVERLIST)
+# 			[[ $# -lt 1 ]] && { echo "There is no line $resp." ; continue ; }
+# 			_server_ip=${1%%/*}
+# 			# Repeat loop to get user to confirm server address.
+# 			;;
+# 		+([A-Za-z0-9\:.\[\]_-]))
+# 			_server_ip=$resp
+# 			break
+# 			;;
+# 		*)	echo "'$resp' is not a valid hostname."
+# 			;;
+# 		esac
+# 	done
+# 	eval _${_url_type}_server_ip=$_server_ip
+

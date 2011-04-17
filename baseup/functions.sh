@@ -19,12 +19,12 @@ usage()
 {
 	echo "Interactive OpenBSD base system upgrade tool."
 	echo ""
-	echo "baseup [-hlpr]"
+	echo "baseup [-hlrt]"
 	echo ""
 	echo " -h   print usage."
 	echo " -l   list available snapshots."
-	echo " -p   purge previous snapshot(s)."
 	echo " -r   revert to previous snapshot."
+	echo " -t   trim old snapshots."
 	echo ""
 	exit 1
 }
@@ -49,8 +49,7 @@ setup_tempdirs()
 	    mktemp -d "$TEMPS" 1>/dev/null 2>&1 || errx "Could not create '${TEMPS}'."
 	fi
 	SNAPDIR=$(date "+%Y-%m-%d-%H")
-	snaps=$(get_snaps)
-	PREVSNAP=$(printf "%s\n" "$snaps" | head -n 1)
+	PREVSNAP=$(get_snaps | head -n 1)
 	if [ -z "${PREVSNAP}" ]; then
 		PREVSNAP=$SNAPDIR
 	fi
@@ -82,11 +81,12 @@ list_snaps()
 
 	snaps=$(get_snaps)
 
-	if [ -z "$snaps" ]; then
-		snaps="None found."
-	fi
 	echo "Listing previously fetched snapshots:"
-	printf "\n%s\n\n" "$snaps" | fmt -w 1
+	if [ -z "$snaps" ]; then
+		printf "\nNone found.\n\n"
+	else
+		printf "\n%s\n\n" "$snaps" | fmt -w 1
+	fi
 }
 
 query_index()
@@ -101,25 +101,24 @@ check_sha256()
 	(cd "$1" && fgrep "($2)" SHA256 | cksum -a sha256 -c) 1>/dev/null 2>&1
 }
 
+# Output configuration setting on success.
+# Otherwise return failure.
 get_config()
 {
-	# If configuration does not exist, create it
-	touch "$CONFIG"
+	local value
 
-	_VAL=$(egrep "^$1=" "$CONFIG")
-	ret=$?
-	if [ "$ret" -ne "0" ]; then
-		return $ret
+	value=$(egrep "^$1=" "$CONFIG")
+	if [ "$?" -ne 0 ] || [ -z "$value" ]; then
+		return 1
 	fi
-	_VAL=$(echo "$_VAL"	| cut -f 2 -d '=' | tail -n 1)
-	
+	printf "%s\n" "$value" | cut -f 2 -d '=' | tail -n 1
 }
 
 set_config()
 {
 	# If configuration does not exist, create it
 	touch "$CONFIG"
-	if ! get_config "$1"; then
+	if ! get_config "$1" 1>/dev/null; then
 		echo "$1=$2" >> "$CONFIG"
 		return 0
 	fi
@@ -136,11 +135,11 @@ fetch_files()
 	local nocheck; nocheck=false
 	for file in $@; do
 		case "$file" in
-			'--nocomp')  nocomp=true;  continue;;
-			'--nocheck') nocheck=true; continue;;
+		'--nocomp')  nocomp=true;  continue;;
+		'--nocheck') nocheck=true; continue;;
 		esac
 
-		if [ "$nocomp" = false ]; then
+		if ! $nocomp; then
 			check_sha256 "${TEMPS}/${SNAPDIR}" "$file" && \
 				printf "%-12s %s\n" "$file" "CACHED (sha256 checked)" && \
 				continue
@@ -153,25 +152,25 @@ fetch_files()
 		# XXX This might be nicer with user prompt
 		rm -f "${TEMPS}/${SNAPDIR}/${file}"
 		case $(echo "$source" | cut -f 1 -d ':') in 
-			file )
-				local src=$(echo "$source" | sed -e 's,^file://,,')
-				cmd=$(cp "${src}/${file}" "${TEMPS}/${SNAPDIR}/${file}" 1>/dev/null 2>&1)
-				code=$?
-				if [ "$code" -eq 0 ]; then
-					printf "%-12s %s\n" $file "GOOD"
-				fi
-			;;
-			ftp|http )
-				ftp -V -m -o "${TEMPS}/${SNAPDIR}/${file}" "${source}/${file}" 2>/dev/null || :
-				code=$?
-			;;
-			* )
-				errx "Unsupported URL scheme $src"
-			;;
+		file )
+			local src=$(echo "$source" | sed -e 's,^file://,,')
+			cmd=$(cp "${src}/${file}" "${TEMPS}/${SNAPDIR}/${file}" 1>/dev/null 2>&1)
+			code=$?
+			if [ "$code" -eq 0 ]; then
+				printf "%-12s %s\n" $file "GOOD"
+			fi
+		;;
+		ftp|http )
+			ftp -V -m -o "${TEMPS}/${SNAPDIR}/${file}" "${source}/${file}" 2>/dev/null || :
+			code=$?
+		;;
+		* )
+			errx "Unsupported URL scheme $src"
+		;;
 		esac
 		if [ "$code" -ne 0 ]; then
 			printf "%-12s %s\n" $file "FAILED with code $code"
-			if [ "$nocheck" = false ]; then
+			if ! $nocheck; then
 				exit 1
 			fi
 		fi
@@ -182,7 +181,7 @@ init_source()
 {
 	echo "What address shall I use as package source?"
 	echo "Here's an example: http://ftp.eu.openbsd.org/pub/OpenBSD/snapshots/`uname -m`"
-	echo "You can edit baseup.conf later if you get this wrong."
+	echo "You can edit '${CONFIG}' later if you get this wrong."
 	read source
 	set_config source "$source"
 }
@@ -211,16 +210,66 @@ yesno()
 		yn=$(printf "%s\n" "$yn" | tr "[:upper:]" "[:lower:]")
 		# check for difference cases
 		case $yn in
-			yes|y)
-				return 0
-				;;
-			no|n)
-				return 1
-				;;
-			"")
-				return $default
-				;;
+		yes|y)
+			return 0
+			;;
+		no|n)
+			return 1
+			;;
+		"")
+			return $default
+			;;
 		esac
 	done    
 }
 
+install_kernel()
+{
+	cp -f /bsd /bsd.orig
+	cp -f "${TEMPS}/${1}/"bsd* /
+
+	echo ""
+	echo "Kernel(s) installed"
+}
+
+install_tgz()
+{
+	local param sysmerge='ask' sysmerge_cmd= dir=${SNAPDIR}
+
+	for param; do
+		case "$param" in
+		'--sysmerge=auto') sysmerge='auto';;
+		'--sysmerge=ask') sysmerge='ask';;
+		'--sysmerge=no') sysmerge='no';;
+		*) dir=$param;;
+		esac	
+	done
+	for pkg in "${TEMPS}/${dir}/"*.tgz; do
+		case "$pkg" in
+		*/etc[0-9][0-9].tgz)
+			sysmerge_cmd="$sysmerge_cmd -s $pkg"
+			echo "Skipping ${pkg}: merge with sysmerge!"
+			continue
+		;;
+		*/xetc[0-9][0-9].tgz)
+			sysmerge_cmd="$sysmerge_cmd -x $pkg"
+			echo "Skipping ${pkg}: merge with sysmerge!"
+			continue
+		;;
+		esac
+		echo "Installing $pkg"
+		(cd / && tar zxfp "$pkg") || break
+	done
+
+	echo ""	
+	echo "Base installed."
+	echo ""
+
+	set_config state install_kernel
+
+	if [ -n "$sysmerge_cmd" ] && [ "$sysmerge" = "auto" ]; then
+		sysmerge $sysmerge_cmd
+	elif [ -n "$sysmerge_cmd" ] && [ "$sysmerge" = "ask" ]; then
+		yesno "Run sysmerge (recommended)?" && sysmerge $sysmerge_cmd
+	fi
+}

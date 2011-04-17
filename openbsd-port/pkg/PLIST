@@ -6,6 +6,7 @@ sbin/baseup
 sbin/chroot_objects
 share/baseup/
 share/baseup/functions.sh
+share/baseup/openbsd-install.sub
 share/doc/baseup/
 share/doc/baseup/LICENSE
 share/doc/check_errata/
