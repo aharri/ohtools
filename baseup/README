@@ -18,7 +18,7 @@ explanation on that below.
 # Requirements
 
 - Only base system of OpenBSD.
-- Enough storage space (~250M of temporary space)
+- Enough storage space (~750M of temporary space)
 
 
 # Installing
