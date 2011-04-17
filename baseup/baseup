@@ -35,7 +35,7 @@ for param; do
 	'-h') usage;;
 	'-l') list_snaps; exit 1;;
 	'-r') action=revert;;
-	'-t') action=trim;;
+	'-t') trim_snaps --verbose 1; exit;;
 	--) break;;
 	esac
 done
@@ -53,18 +53,6 @@ fi
 setup_tempdirs
 
 case "$action" in
-trim)
-	errx "Not implemented."
-#		get_config source
-#		if [ "$_VAL" != "" ]; then
-#			# Clean from previous run.
-#			yesno "Wipe out files from previous run?"
-#			if [ "$?" -eq 0 ]; then
-#				rm -f "${TEMPS}/"*.tgz "${TEMPS}/"bsd* "${TEMPS}/"*boot*
-#			fi
-#		fi
-	break
-;;
 revert)
 	snaps=$(get_snaps)
 	if [ -z "$snaps" ]; then
@@ -109,6 +97,9 @@ revert)
 	install_tgz --sysmerge=auto "$revert"
 ;;
 install_kernel)
+	# Trim old snaps, leave 3.
+	trim_snaps 3
+
 	# SOURCE
 	_VAL=$(get_config source || :)
 	if [ "$?" -ne 0 ] || [ -z "$_VAL" ]; then

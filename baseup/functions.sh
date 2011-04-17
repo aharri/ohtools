@@ -24,7 +24,7 @@ usage()
 	echo " -h   print usage."
 	echo " -l   list available snapshots."
 	echo " -r   revert to previous snapshot."
-	echo " -t   trim old snapshots."
+	echo " -t   trim snapshots, delete all but one."
 	echo ""
 	exit 1
 }
@@ -57,6 +57,44 @@ setup_tempdirs()
 		mktemp -d "${TEMPS}/${SNAPDIR}" 1>/dev/null 2>&1 || \
 			errx "Could not create '${TEMPS}/${SNAPDIR}'"
 	fi
+}
+
+# [--verbose] num
+#
+#  --verbose   enable verbose mode.
+#  num         num number of snaps to leave.
+#  
+trim_snaps()
+{
+	local snap snaps param verbose=false num=1
+	for param; do
+		case "$param" in
+		'--verbose') verbose=true;;
+		+([0-9])) num=$param;;
+		esac	
+	done
+	snaps=$(get_snaps)
+
+	if [ "$(printf "%s\n" "$snaps" | wc -l)" -le "$num" ]; then
+		if $verbose; then
+			echo "$num or less snapshots exists, not trimming."
+		fi
+		return 0
+	fi
+	echo "Trimming old snapshots.\n"
+
+	cd "$TEMPS"
+
+	count=0
+	for snap in $snaps; do
+		count=$((count + 1))
+		if [ "$count" -le "$num" ]; then
+			continue
+		fi
+		rm -rf "$snap"
+		echo "Deleted old snapshot '$snap'"
+	done
+	echo ""
 }
 
 get_snaps()
@@ -145,7 +183,7 @@ fetch_files()
 				continue
 			check_sha256 "${TEMPS}/${PREVSNAP}" "$file" && \
 				printf "%-12s %s\n" "$file" "CACHED (sha256 checked)" && \
-				(cd "${TEMPS}/${SNAPDIR}" && ln -s "../${PREVSNAP}/${file}") && \
+				(cd "${TEMPS}/${SNAPDIR}" && ln "../${PREVSNAP}/${file}") && \
 				continue
 		fi
 
