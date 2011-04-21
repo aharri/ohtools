@@ -70,7 +70,7 @@ trim_snaps()
 	for param; do
 		case "$param" in
 		'--verbose') verbose=true;;
-		+([0-9])) num=$param;;
+		[0-9]|[0-9][0-9]) num=$param;;
 		esac	
 	done
 	snaps=$(get_snaps)
