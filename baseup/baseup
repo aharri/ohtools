@@ -124,14 +124,16 @@ install_kernel)
 	PKGS="base etc comp game man xbase xetc xfont xserv xshare"
 
 	for pkg in $PKGS; do
-		if ! _VAL=$(get_config "$pkg"); then
+		_VAL=$(get_config "$pkg" || :)
+		ret=$?
+		if [ "$ret" -ne 0 ] || ( [ "$ret" -eq 0 ] && [ "$_VAL" != "yes" ] && [ "$_VAL" != "no" ] ); then
 			if yesno "Do you wish to add \"$pkg\" to the list of packages to be installed?"; then
 				ans=yes
 			else
 				ans=no
 			fi
 			set_config $pkg $ans
-		elif [ "$_VAL" = "yes" ] || [ "$_VAL" = "no" ]; then
+		else
 			ans=$_VAL
 		fi
 
