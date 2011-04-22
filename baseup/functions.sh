@@ -268,13 +268,17 @@ install_kernel()
 	cp -f /bsd /bsd.orig
 	cp -f "${TEMPS}/${1}/"bsd* /
 
+	set_config installing "$1"
+
 	echo ""
 	echo "Kernel(s) installed"
 }
 
 install_tgz()
 {
-	local param sysmerge='ask' sysmerge_cmd= dir=${SNAPDIR}
+	local param sysmerge='ask' sysmerge_cmd= dir
+
+	dir=$(get_config installing)
 
 	for param; do
 		case "$param" in
@@ -301,11 +305,12 @@ install_tgz()
 		(cd / && tar zxfp "$pkg") || break
 	done
 
+	set_config state install_kernel
+	set_config installing ''
+
 	echo ""	
 	echo "Base installed."
 	echo ""
-
-	set_config state install_kernel
 
 	if [ -n "$sysmerge_cmd" ] && [ "$sysmerge" = "auto" ]; then
 		sysmerge $sysmerge_cmd
