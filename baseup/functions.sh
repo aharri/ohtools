@@ -185,7 +185,7 @@ fetch_files()
 				continue
 			check_sha256 "${TEMPS}/${PREVSNAP}" "$file" && \
 				printf "%-12s %s\n" "$file" "CACHED (sha256 checked)" && \
-				(cd "${TEMPS}/${SNAPDIR}" && ln "../${PREVSNAP}/${file}") && \
+				(cd "${TEMPS}/${SNAPDIR}" && ln -f "../${PREVSNAP}/${file}") && \
 				continue
 		fi
 
