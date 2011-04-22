@@ -52,6 +52,8 @@ setup_tempdirs()
 	PREVSNAP=$(get_snaps | head -n 1)
 	if [ -z "${PREVSNAP}" ]; then
 		PREVSNAP=$SNAPDIR
+	elif [ "$PREVSNAP" = "$SNAPDIR" ]; then
+		PREVSNAP=$(get_snaps | sed -n -e 2p)
 	fi
 	if [ ! -d "${TEMPS}/${SNAPDIR}" ]; then
 		mktemp -d "${TEMPS}/${SNAPDIR}" 1>/dev/null 2>&1 || \
