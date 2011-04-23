@@ -90,9 +90,9 @@ package: ${PORTSDIR}/infrastructure distfile
 	fi
 	-mv "${PORTSDIR}/mystuff/sysutils/ohtools/" "${PORTSDIR}/mystuff/sysutils/ohtools.orig/"
 	cp -f dist/ohtools-${V}.tar.gz "${PORTSDIR}/distfiles/"
-	cp -r openbsd-port /usr/ports/mystuff/sysutils/ohtools"
+	cp -r openbsd-port "${PORTSDIR}/mystuff/sysutils/ohtools"
 	( \
-		cd /usr/ports/mystuff/sysutils/ohtools && \
+		cd "${PORTSDIR}/mystuff/sysutils/ohtools" && \
 		make makesum && \
 		make clean && \
 		make repackage \
