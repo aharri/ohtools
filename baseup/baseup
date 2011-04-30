@@ -35,11 +35,14 @@ for param; do
 	'-h') usage;;
 	'-l') list_snaps; exit 1;;
 	'-r') action=revert;;
-	'-t') trim_snaps --verbose 1; exit;;
+	'-t') check_priv && trim_snaps --verbose 1; exit;;
 	--) break;;
 	esac
 done
 unset param
+
+# Everything else than usage and list_snaps needs root.
+check_priv
 
 touch "$CONFIG"
 

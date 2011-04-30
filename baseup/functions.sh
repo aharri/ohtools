@@ -318,3 +318,10 @@ install_tgz()
 		yesno "Run sysmerge (recommended)?" && sysmerge $sysmerge_cmd
 	fi
 }
+
+check_priv()
+{
+	if [ "$(whoami)" != "root" ]; then
+		errx "You need to be root to run this."
+	fi
+}
