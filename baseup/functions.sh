@@ -189,7 +189,6 @@ fetch_files()
 				continue
 		fi
 
-		# XXX This might be nicer with user prompt
 		rm -f "${TEMPS}/${SNAPDIR}/${file}"
 		case $(echo "$source" | cut -f 1 -d ':') in 
 		file )
