@@ -280,9 +280,13 @@ install_kernel()
 
 install_tgz()
 {
-	local param sysmerge='ask' sysmerge_cmd= dir
+	local pkg param sysmerge='ask' sysmerge_cmd= dir files=
 
 	dir=$(get_config installing)
+
+	if [ -z "$dir" ]; then
+		errx "Corrupted configuration file."
+	fi
 
 	for param; do
 		case "$param" in
@@ -292,7 +296,13 @@ install_tgz()
 		*) dir=$param;;
 		esac	
 	done
-	for pkg in "${TEMPS}/${dir}/"*.tgz; do
+
+	files="$(find "${TEMPS}/${dir}" -name "*.tgz" -type f)"
+	for pkg in xserv xfont xshare xbase game comp man base xetc etc; do
+		pkg="$(printf "%s\n" "$files" | egrep "/${pkg}..\.tgz")"
+		if [ -z "$pkg" ]; then
+			continue
+		fi
 		case "$pkg" in
 		*/etc[0-9][0-9].tgz)
 			sysmerge_cmd="$sysmerge_cmd -s $pkg"

@@ -1,7 +1,7 @@
 # Makefile for Openhosting's tools collection
 
 # Remember to bump the number inside openbsd-port/Makefile too.
-V=2.0.7
+V=2.0.8
 PROJS=\
 	baseup \
 	chroot_objects \
