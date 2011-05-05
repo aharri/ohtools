@@ -215,8 +215,10 @@ fetch_files()
 		fi
 		# We had to download new file, check that the checksum matches now.
 		if ! $nocomp; then
-			check_sha256 "${TEMPS}/${SNAPDIR}" "$file" || \
-				errx "Downloaded ${TEMPS}/${SNAPDIR}/$file but it failed sha256 checksum."
+			if ! check_sha256 "${TEMPS}/${SNAPDIR}" "$file" ; then
+				echo "Downloaded ${TEMPS}/${SNAPDIR}/$file but it failed sha256 checksum."
+				yesno "Install anyway?" || exit 1
+			fi
 		fi
 	done
 }
