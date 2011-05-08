@@ -149,7 +149,7 @@ class DB {
 	 * @param  string $k
 	 * @return mixed
 	 */
-	private function __get($k) {
+	public function __get($k) {
 		switch($k) {
 			case "transCnt":
 				return $this->transcnt;
@@ -396,7 +396,7 @@ class DB_ResultSet implements Iterator {
 	 * @access private
 	 * @return mixed
 	 */
-	private function __get($k) {
+	public function __get($k) {
 		switch($k) {
 			case "fields":
 				if(isset($this->fields)) {
