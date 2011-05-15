@@ -1,0 +1,12 @@
+# Supported commands:
+#
+#  - add
+#  - base
+#  - change
+#  - enable
+#  - timezone
+#  - bufcachepercent
+#  - nkmempg
+#
+# Uncomment to set buffer cache to 90%
+#bufcachepercent 90

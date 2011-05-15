@@ -21,6 +21,11 @@ share/doc/mailtail/
 share/doc/mailtail/LICENSE
 share/doc/pkgpurge/
 share/doc/pkgpurge/LICENSE
+share/examples/baseup/
+share/examples/baseup/baseup-kernel.conf
+@mode 0600
+@sample ${SYSCONFDIR}/baseup-kernel.conf
+@mode
 share/examples/hotplug/
 share/examples/hotplug/attach
 @sample ${SYSCONFDIR}/hotplug/attach

@@ -1,7 +1,7 @@
 # Makefile for Openhosting's tools collection
 
 # Remember to bump the number inside openbsd-port/Makefile too.
-V=2.0.9
+V=2.1.0
 PROJS=\
 	baseup \
 	chroot_objects \
@@ -30,7 +30,10 @@ baseup:
 	${BSD_INSTALL_SCRIPT_DIR} ${DESTDIR}${PREFIX}/share/baseup
 	${BSD_INSTALL_SCRIPT} $@/functions.sh ${DESTDIR}${PREFIX}/share/baseup/
 	${BSD_INSTALL_SCRIPT} $@/openbsd-install.sub ${DESTDIR}${PREFIX}/share/baseup/
+	${BSD_INSTALL_DATA_DIR} ${DESTDIR}${PREFIX}/share/examples/baseup/
+	${BSD_INSTALL_DATA} $@/.kconfig ${DESTDIR}${PREFIX}/share/examples/baseup/baseup-kernel.conf
 	perl -pi -e "s,^(CONFIG=).*,\1${SYSCONFDIR}/baseup.conf," ${DESTDIR}${PREFIX}/sbin/$@
+	perl -pi -e "s,^(KCONFIG=).*,\1${SYSCONFDIR}/baseup-kernel.conf," ${DESTDIR}${PREFIX}/sbin/$@
 	perl -pi -e "s,^(INSTALL_SUB=).*,\1${LOCALBASE}/share/baseup/openbsd-install.sub," ${DESTDIR}${PREFIX}/sbin/$@
 	perl -pi -e "s,^(FUNCS=).*,\1${LOCALBASE}/share/baseup/functions.sh," ${DESTDIR}${PREFIX}/sbin/$@
 	perl -pi -e "s,^(TEMPS=).*,\1/var/tmp/$@," ${DESTDIR}${PREFIX}/sbin/$@

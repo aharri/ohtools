@@ -269,6 +269,26 @@ yesno()
 	done    
 }
 
+configure_kernels()
+{
+	if [ -f "${KCONFIG}" ]; then
+		local cmds=$(egrep -e '^[[:space:]]*(add|base|change|enable|timezone|bufcachepercent|nkmempg)' "$KCONFIG")
+		if [ -z "$cmds" ]; then
+			echo "You can add kernel config(8) options to '$KCONFIG'"
+			return 1
+		fi
+		local mytest=$(find "${KCONFIG}" -perm -g+w -o -perm -o+w)
+		if [ -n "$mytest" ]; then
+			echo "File $KCONFIG is group or world writable, refusing to configure kernels."
+			return 1
+		fi
+		if [ -n "$cmds" ]; then
+			printf "%s\nquit\n" "$cmds" | config -ef /bsd
+			test -f /bsd.mp && printf "%s\nquit\n" "$cmds" | config -ef /bsd.mp
+		fi
+	fi
+}
+
 install_kernel()
 {
 	cp -f /bsd /bsd.orig
