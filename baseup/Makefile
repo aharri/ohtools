@@ -12,8 +12,8 @@ install:
 	-${INSTALL_DATA} doc/* ${DESTDIR}${DATADIR}/${SUBPROJ}/
 	perl -pi -e "s,^(CONFIG=).*,\1${SYSCONFDIR}/baseup.conf," ${DESTDIR}${PREFIX}/sbin/${SUBPROJ}
 	perl -pi -e "s,^(KCONFIG=).*,\1${SYSCONFDIR}/baseup-kernel.conf," ${DESTDIR}${PREFIX}/sbin/${SUBPROJ}
-	perl -pi -e "s,^(INSTALL_SUB=).*,\1${LOCALBASE}/share/baseup/openbsd-install.sub," ${DESTDIR}${PREFIX}/sbin/${SUBPROJ}
-	perl -pi -e "s,^(FUNCS=).*,\1${LOCALBASE}/share/baseup/functions.sh," ${DESTDIR}${PREFIX}/sbin/${SUBPROJ}
+	perl -pi -e "s,^(INSTALL_SUB=).*,\1${LOCALBASE}/share/ohtools/baseup/openbsd-install.sub," ${DESTDIR}${PREFIX}/sbin/${SUBPROJ}
+	perl -pi -e "s,^(FUNCS=).*,\1${LOCALBASE}/share/ohtools/baseup/functions.sh," ${DESTDIR}${PREFIX}/sbin/${SUBPROJ}
 	perl -pi -e "s,^(TEMPS=).*,\1/var/tmp/${SUBPROJ}," ${DESTDIR}${PREFIX}/sbin/${SUBPROJ}
 
 .include "../Makefile.inc"
