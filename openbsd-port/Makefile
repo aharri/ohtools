@@ -1,6 +1,6 @@
 # $OpenBSD$
 
-V =		2.1.1
+V =		2.1.2
 COMMENT =	tools collection
 
 DISTNAME =	ohtools-${V}

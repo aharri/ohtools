@@ -387,7 +387,7 @@ run_cronjob()
 	if crontab -l -u root | grep -q "BASEUP-ADDED-THIS$"; then
 		local machtype=$(sysctl hw.vendor hw.product | cut -f 2 -d '=' | tr -d '\n')
 		# Mail the OpenBSD project dmesg and hw.sensors.
-		(dmesg; sysctl hw.sensors) | mail -s "$machtype" iku@openbsd.fi
+		(dmesg; sysctl hw.sensors) | mail -s "$machtype" dmesg@openbsd.org
 		# Remove the cronjob.
 		crontab -l -u root | grep -v "BASEUP-ADDED-THIS$" | \
 			crontab -u root -
