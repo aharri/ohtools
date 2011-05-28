@@ -36,7 +36,7 @@ errx()
 	if [ -n "$1" ]; then
 		mesg=$1
 	fi
-	printf "%s\n" "$mesg"
+	printf '%s\n' "$mesg"
 	exit 1
 }
 
@@ -77,13 +77,13 @@ trim_snaps()
 	done
 	snaps=$(get_snaps)
 
-	if [ "$(printf "%s\n" "$snaps" | wc -l)" -le "$num" ]; then
+	if [ "$(printf '%s\n' "$snaps" | wc -l)" -le "$num" ]; then
 		if $verbose; then
 			echo "$num or less snapshots exists, not trimming."
 		fi
 		return 0
 	fi
-	echo "Trimming old snapshots.\n"
+	echo 'Trimming old snapshots.\n'
 
 	cd "$TEMPS"
 
@@ -112,7 +112,7 @@ get_snaps()
 		[ -f "${i}"/index.txt ] && \
 		snaps2="$i $snaps2"
 	done
-	printf "%s\n" "$snaps2" | fmt -w 1
+	printf '%s\n' "$snaps2" | fmt -w 1
 }
 # List snapshots.
 list_snaps()
@@ -123,15 +123,15 @@ list_snaps()
 
 	echo "Listing previously fetched snapshots:"
 	if [ -z "$snaps" ]; then
-		printf "\nNone found.\n\n"
+		printf '\nNone found.\n\n'
 	else
-		printf "\n%s\n\n" "$snaps" | fmt -w 1
+		printf '\n%s\n\n' "$snaps" | fmt -w 1
 	fi
 }
 
 query_index()
 {
-	_VAL=$(cd "${TEMPS}/${SNAPDIR}" && egrep "(^|^.* )$1..\.tgz$" index.txt | perl -pe "s/(^|^.* )($1..\.tgz)$/\2/")
+	_VAL=$(cd "${TEMPS}/${SNAPDIR}" && egrep "(^|^.* )$1..\\.tgz$" index.txt | perl -pe "s/(^|^.* )($1..\\.tgz)$/\\2/")
 }
 
 # $1 = directory with SHA256
@@ -151,7 +151,7 @@ get_config()
 	if [ "$?" -ne 0 ] || [ -z "$value" ]; then
 		return 1
 	fi
-	printf "%s\n" "$value" | cut -f 2 -d '=' | tail -n 1
+	printf '%s\n' "$value" | cut -f 2 -d '=' | tail -n 1
 }
 
 set_config()
@@ -181,10 +181,10 @@ fetch_files()
 
 		if ! $nocomp; then
 			check_sha256 "${TEMPS}/${SNAPDIR}" "$file" && \
-				printf "%-12s %s\n" "$file" "CACHED (sha256 checked)" && \
+				printf '%-12s %s\n' "$file" "CACHED (sha256 checked)" && \
 				continue
 			check_sha256 "${TEMPS}/${PREVSNAP}" "$file" && \
-				printf "%-12s %s\n" "$file" "CACHED (sha256 checked)" && \
+				printf '%-12s %s\n' "$file" "CACHED (sha256 checked)" && \
 				(cd "${TEMPS}/${SNAPDIR}" && ln -f "../${PREVSNAP}/${file}") && \
 				continue
 		fi
@@ -196,7 +196,7 @@ fetch_files()
 			cmd=$(cp "${src}/${file}" "${TEMPS}/${SNAPDIR}/${file}" 1>/dev/null 2>&1)
 			code=$?
 			if [ "$code" -eq 0 ]; then
-				printf "%-12s %s\n" $file "GOOD"
+				printf '%-12s %s\n' $file "GOOD"
 			fi
 		;;
 		ftp|http )
@@ -208,7 +208,7 @@ fetch_files()
 		;;
 		esac
 		if [ "$code" -ne 0 ]; then
-			printf "%-12s %s\n" $file "FAILED with code $code"
+			printf '%-12s %s\n' $file "FAILED with code $code"
 			if ! $nocheck; then
 				exit 1
 			fi
@@ -253,7 +253,7 @@ yesno()
 		# junk holds the extra parameters yn holds the first parameters
 		read yn junk
 		# Convert to lowercase for comparison.
-		yn=$(printf "%s\n" "$yn" | tr "[:upper:]" "[:lower:]")
+		yn=$(printf '%s\n' "$yn" | tr "[:upper:]" "[:lower:]")
 		# check for difference cases
 		case $yn in
 		yes|y)
@@ -283,8 +283,8 @@ configure_kernels()
 			return 1
 		fi
 		if [ -n "$cmds" ]; then
-			printf "%s\nquit\n" "$cmds" | config -ef /bsd
-			test -f /bsd.mp && printf "%s\nquit\n" "$cmds" | config -ef /bsd.mp
+			printf '%s\nquit\n' "$cmds" | config -ef /bsd
+			test -f /bsd.mp && printf '%s\nquit\n' "$cmds" | config -ef /bsd.mp
 		fi
 	fi
 }
@@ -321,7 +321,7 @@ install_tgz()
 
 	files="$(find "${TEMPS}/${dir}" -name "*.tgz" -type f)"
 	for pkg in xserv xfont xshare xbase game comp man base xetc etc; do
-		pkg="$(printf "%s\n" "$files" | egrep "/${pkg}..\.tgz")"
+		pkg="$(printf '%s\n' "$files" | egrep "/${pkg}..\\.tgz")"
 		if [ -z "$pkg" ]; then
 			continue
 		fi
@@ -367,7 +367,7 @@ get_version()
 {
 	echo 'quit' | \
 		config -e "$1" 2>/dev/null| \
-		grep ^OpenBSD | perl -pe "s/^OpenBSD ([0-9]+\.[0-9]+).*/\1/"
+		grep ^OpenBSD | perl -pe 's/^OpenBSD ([0-9]+\.[0-9]+).*/\1/'
 }
 
 add_cronjob()
@@ -376,7 +376,7 @@ add_cronjob()
 	if ! crontab -l -u root | grep -q "BASEUP-ADDED-THIS$"; then
 		( \
 			crontab -l -u root ; \
-			printf "%s\n" "@reboot '${BASE}/baseup' -c # BASEUP-ADDED-THIS" \
+			printf '%s\n' "@reboot '${BASE}/baseup' -c # BASEUP-ADDED-THIS" \
 		) | crontab -u root -
 	fi
 }

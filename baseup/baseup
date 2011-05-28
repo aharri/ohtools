@@ -63,14 +63,14 @@ revert)
 	if [ -z "$snaps" ]; then
 		errx "Cannot revert, no snapshots found."
 	fi
-	echo "Found the following snaps:\n"
+	echo 'Found the following snaps:\n'
 	count=1
 	for i in $snaps; do
-		printf "[%s] %s\n" "$count" "$i"
+		printf '[%s] %s\n' "$count" "$i"
 		count=$((count + 1))
 	done
 	# Second newest entry.
-	default=$(printf "%s\n" "$snaps" | head -n 2 | tail -n 1)
+	default=$(printf '%s\n' "$snaps" | head -n 2 | tail -n 1)
 	while :; do
 		openbsd_ask_until "Which one?" "$default"
 		case "$resp" in
@@ -78,12 +78,12 @@ revert)
 		"?") 
 			count=1
 			for i in $snaps; do
-				printf "[%s] %s\n" "$count" "$i"
+				printf '[%s] %s\n' "$count" "$i"
 				count=$((count + 1))
 			done
 		;;
 		[0-9]|[0-9][0-9])
-			set -- $(printf "%s\n" "$snaps" | sed -n "${resp}p")
+			set -- $(printf '%s\n' "$snaps" | sed -n "${resp}p")
 			[[ $# -lt 1 ]] && { echo "There is no line $resp." ; continue ; }
 			revert=$1
 			break
@@ -158,7 +158,7 @@ install_kernel)
 	configure_kernels || :
 
 	if [ "$curver" != "$newver" ]; then
-		printf "%s\n" "Your OpenBSD version has changed ($curver -> $newver)."
+		printf '%s\n' "Your OpenBSD version has changed ($curver -> $newver)."
 		yesno "Would you like to schedule sending of dmesg to OpenBSD?" && \
 			add_cronjob
 	fi
