@@ -150,9 +150,6 @@ install_kernel)
 
 	# now install kernels
 	yesno "About to install kernels, are you sure?" n
-	if [ "$?" -eq 1 ]; then
-		exit 1
-	fi
 
 	install_kernel "${SNAPDIR}"
 	configure_kernels || :

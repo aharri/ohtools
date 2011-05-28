@@ -217,7 +217,7 @@ fetch_files()
 		if ! $nocomp; then
 			if ! check_sha256 "${TEMPS}/${SNAPDIR}" "$file" ; then
 				echo "Downloaded ${TEMPS}/${SNAPDIR}/$file but it failed sha256 checksum."
-				yesno "Install anyway?" || exit 1
+				yesno "Install anyway?"
 			fi
 		fi
 	done
