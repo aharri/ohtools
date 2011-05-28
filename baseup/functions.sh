@@ -366,8 +366,8 @@ check_priv()
 get_version()
 {
 	echo 'quit' | \
-		config -e "$1" 2>/dev/null| \
-		grep ^OpenBSD | perl -pe 's/^OpenBSD ([0-9]+\.[0-9]+).*/\1/'
+		config -e "$1" 2>/dev/null | \
+		sed -nEe 's/^OpenBSD ([0-9]+\.[0-9]+).*/\1/p'
 }
 
 add_cronjob()
