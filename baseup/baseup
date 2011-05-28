@@ -33,6 +33,7 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 action=
 for param; do
 	case "$param" in
+	'-c') check_priv && run_cronjob; exit 0;;
 	'-h') usage;;
 	'-l') list_snaps; exit 1;;
 	'-r') action=revert;;
@@ -151,8 +152,18 @@ install_kernel)
 	# now install kernels
 	yesno "About to install kernels, are you sure?" n
 
+	curver=$(get_version /bsd)
 	install_kernel "${SNAPDIR}"
+	newver=$(get_version /bsd)
 	configure_kernels || :
+
+	if [ "$curver" != "$newver" ]; then
+		printf "%s\n" "Your OpenBSD version has changed ($curver -> $newver)."
+		yesno "Would you like to schedule sending of dmesg to OpenBSD?" && \
+			add_cronjob
+	fi
+	unset curver
+	unset newver
 
 	echo ""
 	echo "Next launch will extract base packages. You can"

@@ -361,3 +361,35 @@ check_priv()
 		errx "You need to be root to run this."
 	fi
 }
+
+# Get MAJOR.MINOR.
+get_version()
+{
+	echo 'quit' | \
+		config -e "$1" 2>/dev/null| \
+		grep ^OpenBSD | perl -pe "s/^OpenBSD ([0-9]+\.[0-9]+).*/\1/"
+}
+
+add_cronjob()
+{
+	# Check to see if the job already exists.
+	if ! crontab -l -u root | grep -q "BASEUP-ADDED-THIS$"; then
+		( \
+			crontab -l -u root ; \
+			printf "%s\n" "@reboot '${BASE}/baseup' -c # BASEUP-ADDED-THIS" \
+		) | crontab -u root -
+	fi
+}
+
+run_cronjob()
+{
+	# Check to see if the job exists.
+	if crontab -l -u root | grep -q "BASEUP-ADDED-THIS$"; then
+		local machtype=$(sysctl hw.vendor hw.product | cut -f 2 -d '=' | tr -d '\n')
+		# Mail the OpenBSD project dmesg and hw.sensors.
+		(dmesg; sysctl hw.sensors) | mail -s "$machtype" iku@openbsd.fi
+		# Remove the cronjob.
+		crontab -l -u root | grep -v "BASEUP-ADDED-THIS$" | \
+			crontab -u root -
+	fi
+}
