@@ -351,7 +351,7 @@ install_tgz()
 	if [ -n "$sysmerge_cmd" ] && [ "$sysmerge" = "auto" ]; then
 		sysmerge $sysmerge_cmd
 	elif [ -n "$sysmerge_cmd" ] && [ "$sysmerge" = "ask" ]; then
-		yesno "Run sysmerge (recommended)?" && sysmerge $sysmerge_cmd
+		yesno "Run sysmerge (recommended)?" && sysmerge $sysmerge_cmd || :
 	fi
 }
 
