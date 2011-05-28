@@ -6,7 +6,7 @@
 BASE=$(cd -- "$(dirname -- "$0")"; pwd)
 INST_PREFIX=/usr/local
 
-if [ -f "${BASE}/attach.conf" ] && [ -f "${INST_PREFIX}/share/hotplug/attach.sh" ]; then
+if [ -f "${BASE}/attach.conf" ] && [ -f "${INST_PREFIX}/share/ohtools/hotplug/attach.sh" ]; then
 	. "${BASE}/attach.conf"
-	. "${INST_PREFIX}/share/hotplug/attach.sh"
+	. "${INST_PREFIX}/share/ohtools/hotplug/attach.sh"
 fi
