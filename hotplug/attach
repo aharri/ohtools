@@ -20,7 +20,7 @@ INST_PREFIX=/usr/local
 
 if [ -f "${BASE}/attach.conf" ] && [ -f "${INST_PREFIX}/share/ohtools/hotplug/attach.sh" ]; then
 	. "${BASE}/attach.conf"
-	if [ "$DEBUG" = "YES" ]; then
+	if [ -n "$DEBUG" ]; then
 		mkdir -p /root/hotplug-debug || exit 1
 		exec > "/root/hotplug-debug/$2.txt" 2>&1
 		set -x
