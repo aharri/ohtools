@@ -1,8 +1,6 @@
 <?php
 
 /*
- * $Id: class.html.php,v 1.2 2007/09/08 11:54:51 iku Exp $
- *
  * Copyright (c) 2006,2007,2009
  * Antti Harri / OpenHosting Harri <iku@openbsd.fi>
  *

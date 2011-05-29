@@ -1,7 +1,5 @@
 #!/bin/sh
 #
-# $Id: check_errata,v 1.2 2008/03/23 15:59:52 iku Exp $
-#
 # Copyright (c) 2007 Antti Harri <iku@openbsd.fi>
 #
 # Permission to use, copy, modify, and distribute this software for any

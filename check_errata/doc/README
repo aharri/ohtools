@@ -3,5 +3,3 @@ Simple and automatic OpenBSD Errata entry checker.
 Run this once a day, here's an example for cron:
 01 05 * * * $HOME/bin/check_errata.sh [your_email]
 
--- 
-$Id: README,v 1.1 2007/11/09 18:29:33 iku Exp $
