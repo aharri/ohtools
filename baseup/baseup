@@ -150,7 +150,7 @@ install_kernel)
 	done
 
 	# now install kernels
-	yesno "About to install kernels, are you sure?" n
+	yesno "About to install kernels, are you sure?"
 
 	curver=$(get_version /bsd)
 	install_kernel "${SNAPDIR}"
@@ -173,7 +173,7 @@ install_kernel)
 ;;
 install_base)
 	# install the base packages
-	yesno "About to install base packages, are you sure?" n
+	yesno "About to install base packages, are you sure?"
 	install_tgz --sysmerge=ask
 ;;
 *) errx "Unknown configuration state '$action'."; break ;;
