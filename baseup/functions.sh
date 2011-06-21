@@ -291,7 +291,12 @@ configure_kernels()
 
 install_kernel()
 {
-	cp -f /bsd /bsd.orig
+	local kernels=$(cd "${TEMPS}/${1}" && ls -1 bsd*)
+
+	# Backup old kernels.
+	for i in $kernels; do
+		test -f "/$i" && cp -f "/$i" "/${i}.orig"
+	done
 	cp -f "${TEMPS}/${1}/"bsd* /
 
 	set_config installing "$1"
