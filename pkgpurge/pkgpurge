@@ -52,7 +52,7 @@ function check_for_packages {
 		fi
 	done
 	if [ -n "$purge" ]; then
-		sudo pkg_delete $purge
+		pkg_delete $purge
 	fi
 }
 
