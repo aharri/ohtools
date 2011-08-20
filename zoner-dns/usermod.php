@@ -22,13 +22,32 @@ require 'zoner-functions.php';
 sql_connect();
 
 if ($argc <= 1) {
-	die($argv[0].": add\n");
+	die($argv[0].": init|add\n");
 }
 
 $mode = $argv[1];
 
 switch ($mode)
 {
+	case "init":
+		try {
+			$rs = db()->prepare
+			("
+				create table `".db()->prefix."dyndns`
+				(
+					id integer primary key,
+					user text,
+					pass text,
+					fqdn text,
+					oldip text,
+					newip text
+				)
+			");
+			$rs->execute();
+		} catch (Exception $e) {
+			print ($e->getmessage());
+		}
+	break;
 	case "add":
 		$user = read_stdin("Enter username: ");
 		$pass = read_stdin("Enter password: ");
