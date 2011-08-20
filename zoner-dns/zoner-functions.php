@@ -17,7 +17,7 @@
 function error($msg="Argh! Yarrr!\n")
 {
 	$str = sprintf($msg);
-	fwrite(STDERR, $str);
+	file_put_contents("php://stderr", $str);
 	die();
 }
 
@@ -38,7 +38,7 @@ function run_curl($url, $postfields=NULL)
 	$html = curl_exec($ch);
 	if ($html === false)
 	{
-		fwrite(STDERR, curl_error($ch)."\n");
+		file_put_contents("php://stderr", curl_error($ch)."\n");
 	}
 	curl_close($ch);
 
