@@ -95,7 +95,7 @@ function check_auth($fqdn, $user, $pass)
 		$rs->set($user);
 		$rs->execute();
 		$obj = $rs->fetchObj();
-		if ($obj->password == crypt($pass, $obj->password)) {
+		if ($obj->pass == crypt($pass, $obj->pass)) {
 			return true;
 		} else {
 			return false;
