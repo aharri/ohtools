@@ -1,7 +1,7 @@
 # Makefile for Openhosting's tools collection
 
 # Remember to bump the number inside openbsd-port/Makefile too.
-V=2.1.5
+V=2.1.6
 
 PORTSDIR ?=	/usr/ports
 SYSCONFDIR =	/etc

@@ -62,7 +62,7 @@ switch ($mode)
 				$rs = db()->prepare
 				("
 					insert into `".db()->prefix."dyndns`
-					(`user`, `password`, `fqdn`) values
+					(`user`, `pass`, `fqdn`) values
 					(".db()->param('a').",".db()->param('b').",".db()->param('c').")
 				");
 				$rs->set($user);
