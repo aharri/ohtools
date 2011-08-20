@@ -8,6 +8,9 @@ $zoner['password'] = '';
 // Set to true if you have bought SSL to your Zoner account.
 $zoner['ssl'] = false;
 
+// Uncomment to enable debugging information
+//define(̈́'DEBUG', 1);
+
 // No change usually required.
 define ('SQL_HOST',   '');
 define ('SQL_PREFIX', '');

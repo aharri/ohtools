@@ -50,10 +50,8 @@ function run_curl($url, $postfields=NULL)
 	return $code;
 }
 
-// To get debug use this. 
-// function debugline($msg) { print($msg); }
-function debugline($msg) { }
-function DEBUG($msg){ }
+function debugline($msg) { if (defined('DEBUG')) print ($msg); }
+function DEBUG($msg){ if (defined('DEBUG')) print ($msg); }
 
 function ssl_is_enabled()
 {
