@@ -343,7 +343,7 @@ install_tgz()
 		;;
 		esac
 		echo "Installing $pkg"
-		(cd / && tar zxfp "$pkg") || break
+		(cd / && tar zxfp "$pkg") || (echo "Error while extracting sets"; exit 1)
 	done
 
 	set_config state install_kernel

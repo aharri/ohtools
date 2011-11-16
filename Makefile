@@ -23,4 +23,3 @@ ${SUBDIR}::
 .endif
 
 .include "Makefile.inc"
-.include "Makefile.port.inc"
