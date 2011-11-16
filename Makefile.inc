@@ -1,7 +1,5 @@
 # Makefile for Openhosting's tools collection
 
-V=2.1.7
-
 SYSCONFDIR =	/etc
 DESTDIR ?=
 PREFIX ?=	/usr/local
