@@ -38,6 +38,7 @@ for param; do
 	'-l') list_snaps; exit 1;;
 	'-r') action=revert;;
 	'-t') check_priv && trim_snaps --verbose 1; exit;;
+	*) usage;;
 	--) break;;
 	esac
 done
