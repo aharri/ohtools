@@ -56,6 +56,12 @@ function check_for_packages {
 	fi
 }
 
+# Check for root privileges.
+if [ "$(whoami)" != "root" ]; then
+	echo "You need to be root to run this."
+	exit 1
+fi
+
 while true; do
 	check_for_packages
 	if ! let "deleted_packages"; then
