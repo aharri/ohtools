@@ -26,8 +26,7 @@
 # drwxr-xr-x    3 iku      users         512 Sep 30 00:11 2007
 # drwx------    2 iku      users         512 Sep 30 00:11 2007/09
 #
-# Configure your CAMMNT mount point in /etc/fstab, for example:
-# 4f98a293132db4a0.i /mnt/digicam msdos rw,nodev,nosuid,noatime,noexec 0 0
+# Check /etc/hotplug for configuration
 
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 
@@ -53,6 +52,11 @@ comparedevs()
 
 DEVCLASS=$1
 DEVNAME=$2
+
+# Hack to get ugen0 (PTP cameras use the right code)
+case $DEVNAME in
+	ugen*) DEVCLASS=2;;
+esac
 case $DEVCLASS in
 0)
 	# Use this with multiple USB printers in OpenBSD
@@ -80,48 +84,58 @@ case $DEVCLASS in
 	# This part should be -eu compatible.
 	set -eu
 
-	duid=$(disklabel "$DEVNAME" | sed -nE 's/^duid: (.*)$/\1/p')
-	if [ -z "$duid" ] || [ "$duid" = "0000000000000000" ]; then
-		DEBUG "No DUID set on '$DEVNAME'"
-		exit 1
-	fi
-	if ! egrep -q "^${duid}\\..[[:space:]]+${CAMMNT}[[:space:]]" /etc/fstab; then
-		DEBUG "DUID ($duid) did not match mount point '${CAMMNT}'"
-	fi
-
-	# Prepare user & group
+	# Prepare user & group.
 	test -n "$CAMUSER" && CAMUSER="-o $CAMUSER"
 	test -n "$CAMGROUP" && CAMGROUP="-g $CAMGROUP"
 
-	# Prepare mount point
-	if [ ! -d "$CAMMNT" ]; then
-		mkdir -p "$CAMMNT"
-	fi
-
-	if ! mount "$CAMMNT"; then
-		logger "Failed to mount '${CAMMNT}'."
-		exit 1
-	fi
-	trap "umount \"$CAMMNT\"" 0 1 13 15
-
 	TMP=$(mktemp -t -d hotplug.XXXXXXXXXX) || (logger "Could not create tmpdir"; exit 1)
-	files=$(find "${CAMMNT}/" \( -iname '*.jpg' -or -iname '*.avi' \))
-	if [ -z "$files" ]; then
-		logger "No files on device."
-		exit 0
-	fi
 
-	for file in $files; do
-		install $CAMUSER $CAMGROUP -m "$CAMFILEMODE" "$file" "$TMP" 2>&1 || (logger "Failed to extract $file" ; continue)
-		filename=$(basename "$file")
-		if cmp -s "$file" "${TMP}/${filename}"; then
-			rm -f "$file"
-		else
-			logger "Failed to extract file $filename"
+	# USB Mass Storage specific block.
+	if [ -n "$CAMMNT" ]; then
+		duid=$(disklabel "$DEVNAME" | sed -nE 's/^duid: (.*)$/\1/p')
+		if [ -z "$duid" ] || [ "$duid" = "0000000000000000" ]; then
+			DEBUG "No DUID set on '$DEVNAME'"
+			exit 1
 		fi
-	done
+		if ! egrep -q "^${duid}\\..[[:space:]]+${CAMMNT}[[:space:]]" /etc/fstab; then
+			DEBUG "DUID ($duid) did not match mount point '${CAMMNT}'"
+		fi
+	
+		# Prepare mount point
+		if [ ! -d "$CAMMNT" ]; then
+			mkdir -p "$CAMMNT"
+		fi
+	
+		if ! mount "$CAMMNT"; then
+			logger "Failed to mount '${CAMMNT}'."
+			exit 1
+		fi
+		trap "umount \"$CAMMNT\"" 0 1 13 15
+	
+		files=$(find "${CAMMNT}/" \( -iname '*.jpg' -or -iname '*.avi' \))
+		if [ -z "$files" ]; then
+			logger "No files on device."
+			exit 0
+		fi
+	
+		for file in $files; do
+			install $CAMUSER $CAMGROUP -m "$CAMFILEMODE" "$file" "$TMP" 2>&1 || (logger "Failed to extract $file" ; continue)
+			filename=$(basename "$file")
+			if cmp -s "$file" "${TMP}/${filename}"; then
+				rm -f "$file"
+			else
+				logger "Failed to extract file $filename"
+			fi
+		done
+	# USB PTP specific block.
+	elif [ -n "$CAMID" ]; then
+		port=$(gphoto2 --auto-detect | grep "^$CAMID" | sed -Ee "s#.* (usb:.*)#\1#")
+		cd "${TMP}"
+		gphoto2 --port "$port" --quiet -P
+ 		gphoto2 --port "$port" --quiet -DR
+	fi
 	# Transform file
-	jhead -nf"$CAMFILEFORMAT" "${TMP}/"*.jpg 1>/dev/null
+	(find "${TMP}" -iname "*.jpg" -print0 | xargs -0r jhead -nf"$CAMFILEFORMAT") 1>/dev/null
 
 	year=$(date +%Y)
 	month=$(date +%m)

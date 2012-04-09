@@ -16,16 +16,16 @@ your printing spooler to use the symlink.
 With automatic digicam extraction you can
 just hook your camera into USB port and 
 wait for the script to extract images from
-it. Remember to check your camera is in USB,
-and *not* PTP mode! The files will be removed
-from the camera as soon as transfer is complete,
-named after EXIF header's date and shoved into
-appropriate directories such as 2007/09/.
+it. Supports both PTP and USB Mass Storage
+modes!
+
+The files will be removed from the camera
+as soon as transfer is complete, and
+by default named after EXIF header's date
+and shoved into appropriate directories such
+as 2007/09/.
 
 --- Requirements ---
-
-OpenBSD that includes hotplug daemon (All
-recent enough releases do).
 
 -- For printer linker --
 
@@ -34,18 +34,9 @@ Nothing external.
 -- For digital cameras --
 
 Jhead from graphics/jhead.
+Gphoto2 from graphics/gphoto2.
 
 --- Installation ---
 
-This section is out of date..
-
-1. Open the script with your editor and change the
-   configuration part.
-2. Install as /etc/hotplug/attach:
-   # install -o root -g wheel -m 755 attach /etc/hotplug/attach
-3. Activate hotplugd: 
-   # egrep -q '^hotplugd_flags' /etc/rc.conf.local || echo \
-     'hotplugd_flags=""' >> /etc/rc.conf.local
-   # hotplugd
-4. That's it. Plug in your USB devices. :-)
-
+Make a package of ohtools by using openbsd-wip
+repo available at https://github.com/aharri/wip-ports
