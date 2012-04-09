@@ -89,12 +89,6 @@ case $DEVCLASS in
 		DEBUG "DUID ($duid) did not match mount point '${CAMMNT}'"
 	fi
 
-	# Check for JPEG header tool
-	if ! which jhead 1>/dev/null 2>/dev/null; then
-		logger "JPEG header tool jhead not found."
-		exit 1
-	fi
-
 	# Prepare user & group
 	test -n "$CAMUSER" && CAMUSER="-o $CAMUSER"
 	test -n "$CAMGROUP" && CAMGROUP="-g $CAMGROUP"
