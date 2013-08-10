@@ -138,7 +138,9 @@ query_index()
 # $2 = what package to checksum
 check_sha256()
 {
-	(cd "$1" && fgrep "($2)" SHA256 | cksum -a sha256 -c) 1>/dev/null 2>&1
+	# It is important to always check against the SHA256
+	# under the directory that we are building.
+	(cd "$1" && fgrep "($2)" "${TEMPS}/${SNAPDIR}/SHA256" | cksum -a sha256 -c) 1>/dev/null 2>&1
 }
 
 # Output configuration setting on success.
@@ -184,7 +186,7 @@ fetch_files()
 				printf '%-12s %s\n' "$file" "CACHED (sha256 checked)" && \
 				continue
 			check_sha256 "${TEMPS}/${PREVSNAP}" "$file" && \
-				printf '%-12s %s\n' "$file" "CACHED (sha256 checked)" && \
+				printf '%-12s %s\n' "$file" "CACHED (sha256 checked previously cached file)" && \
 				(cd "${TEMPS}/${SNAPDIR}" && ln -f "../${PREVSNAP}/${file}") && \
 				continue
 		fi
