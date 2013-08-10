@@ -46,7 +46,7 @@ setup_tempdirs()
 	local snaps
 	# XXX: race condition
 	if [ ! -d "$TEMPS" ]; then
-	    mktemp -d "$TEMPS" 1>/dev/null 2>&1 || errx "Could not create '${TEMPS}'."
+	    mkdir "$TEMPS" 1>/dev/null 2>&1 || errx "Could not create '${TEMPS}'."
 	fi
 	SNAPDIR=$(date "+%Y-%m-%d-%H")
 	PREVSNAP=$(get_snaps | head -n 1)
@@ -56,7 +56,7 @@ setup_tempdirs()
 		PREVSNAP=$(get_snaps | head -n 2 | tail -n 1)
 	fi
 	if [ ! -d "${TEMPS}/${SNAPDIR}" ]; then
-		mktemp -d "${TEMPS}/${SNAPDIR}" 1>/dev/null 2>&1 || \
+		mkdir "${TEMPS}/${SNAPDIR}" 1>/dev/null 2>&1 || \
 			errx "Could not create '${TEMPS}/${SNAPDIR}'"
 	fi
 }
