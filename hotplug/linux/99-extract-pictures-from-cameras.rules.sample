@@ -1,0 +1,21 @@
+ACTION!="add", GOTO="camera_rules_end"
+SUBSYSTEM!="block|usb|usb_device", GOTO="camera_rules_end"
+
+# Canon IXUS digital camera 04a9:311c (PTP)
+# Use gphoto2 --auto-detect to get CAMID
+ATTRS{idVendor}=="04a9", ATTRS{idProduct}=="311c", ENV{ID_GPHOTO2}=="1", ENV{CAMID}="Canon Digital IXUS 60 (PTP mode)", RUN+="/stuff/pics/attach DCIM"
+
+# Canon Legria Video Camera 04a9:3220 (Data storage)
+# Legrias contain many medias: internal memory and 2 memory card slots
+# Search first for DCIM == Digital photos
+# and then for AVCHD directories for videos
+# So that helper images etc aren't extracted.
+ATTRS{idVendor}=="04a9", ATTRS{idProduct}=="3220", ENV{DEVTYPE}=="partition", RUN+="/stuff/pics/attach -r DCIM PRIVATE/AVCHD/BDMV"
+
+# Nokia phone 0421:0358 (Data storage)
+ATTRS{idVendor}=="0421", ATTRS{idProduct}=="0358", ENV{DEVTYPE}=="partition", RUN+="/stuff/pics/attach Outbox"
+
+# Samsung phone 04e8:675a (Data storage)
+ATTRS{idVendor}=="04e8", ATTRS{idProduct}=="675a", ENV{ID_MODEL}=="GT-S5610_CARD", RUN+="/stuff/pics/attach 'Omat kuvat'"
+
+LABEL="camera_rules_end"
