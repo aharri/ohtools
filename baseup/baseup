@@ -118,7 +118,7 @@ install_kernel)
 	# always needed files
 	echo "Fetch source $source."
 	echo "Fetching SHA256 sums and index."
-	fetch_files --nocomp SHA256 index.txt
+	fetch_files --nocomp SHA256 SHA256.sig index.txt
 
 	echo "Fetching new boot files and kernels."
 	fetch_files bsd.rd bsd

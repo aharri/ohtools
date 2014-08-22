@@ -328,7 +328,7 @@ install_tgz()
 
 	files="$(find "${TEMPS}/${dir}" -name "*.tgz" -type f)"
 	for pkg in xserv xfont xshare xbase game comp man base xetc etc; do
-		pkg="$(printf '%s\n' "$files" | egrep "/${pkg}..\\.tgz")"
+		pkg="$(printf '%s\n' "$files" | egrep "/${pkg}..\\.tgz" || :)"
 		if [ -z "$pkg" ]; then
 			continue
 		fi
