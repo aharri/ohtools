@@ -309,7 +309,7 @@ install_kernel()
 
 install_tgz()
 {
-	local pkg param sysmerge='ask' sysmerge_cmd= dir files=
+	local pkg param sysmerge='ask' dir files=
 
 	dir=$(get_config installing)
 
@@ -327,23 +327,11 @@ install_tgz()
 	done
 
 	files="$(find "${TEMPS}/${dir}" -name "*.tgz" -type f)"
-	for pkg in xserv xfont xshare xbase game comp man base xetc etc; do
+	for pkg in xserv xfont xshare xbase game comp man base; do
 		pkg="$(printf '%s\n' "$files" | egrep "/${pkg}..\\.tgz" || :)"
 		if [ -z "$pkg" ]; then
 			continue
 		fi
-		case "$pkg" in
-		*/etc[0-9][0-9].tgz)
-			sysmerge_cmd="$sysmerge_cmd -s $pkg"
-			echo "Skipping ${pkg}: merge with sysmerge!"
-			continue
-		;;
-		*/xetc[0-9][0-9].tgz)
-			sysmerge_cmd="$sysmerge_cmd -x $pkg"
-			echo "Skipping ${pkg}: merge with sysmerge!"
-			continue
-		;;
-		esac
 		echo "Installing $pkg"
 		(cd / && tar zxfp "$pkg") || (echo "Error while extracting sets"; exit 1)
 	done
@@ -355,10 +343,10 @@ install_tgz()
 	echo "Base installed."
 	echo ""
 
-	if [ -n "$sysmerge_cmd" ] && [ "$sysmerge" = "auto" ]; then
-		sysmerge $sysmerge_cmd
-	elif [ -n "$sysmerge_cmd" ] && [ "$sysmerge" = "ask" ]; then
-		yesno "Run sysmerge (recommended)?" && sysmerge $sysmerge_cmd || :
+	if [ "$sysmerge" = "auto" ]; then
+		sysmerge
+	elif [ "$sysmerge" = "ask" ]; then
+		yesno "Run sysmerge (recommended)?" && sysmerge || :
 	fi
 }
 

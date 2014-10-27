@@ -127,7 +127,7 @@ install_kernel)
 
 	# fetch only selected files
 	echo "Fetching base packages."
-	PKGS="base etc comp game man xbase xetc xfont xserv xshare"
+	PKGS="base comp game man xbase xfont xserv xshare"
 
 	for pkg in $PKGS; do
 		_VAL=$(get_config "$pkg" || :)
