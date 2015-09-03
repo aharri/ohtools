@@ -18,5 +18,5 @@
 BASE=$(cd -- "$(dirname -- "$0")"; pwd)
 
 if [ -f "${BASE}/attach.conf" ] && [ -f "${BASE}/attach.bash" ]; then
-	_ATTACH_CONF="${BASE}/attach.conf" "${BASE}/attach.bash" "$@" &
+	echo "${BASE}/attach.bash" "$@" | _ATTACH_CONF="${BASE}/attach.conf" at now
 fi
