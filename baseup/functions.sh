@@ -303,6 +303,8 @@ install_kernel()
 
 	set_config installing "$1"
 
+	sha256 -h /var/db/kernel.SHA256 /bsd
+
 	echo ""
 	echo "Kernel(s) installed"
 }
